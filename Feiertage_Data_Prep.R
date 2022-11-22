@@ -10,9 +10,11 @@ library(tidyverse)
 # Vektor mit den ausgewählten Jahren, für die die Feiertage importiert werden sollen
 jahr <- c(2013:2019)
 
-# die Variable feiertageSH enthält alle Feiertage des Zeitraums
+# die Variable feiertageSH soll alle Feiertage des Zeitraums enthalten
+# erstmal leeren df erstellen
 feiertageSH <- as.data.frame(NULL)
 
+# for loop, um die Feiertage aus allen Jahren herunterzuladen und zusammen in der Variable feiertageSH abzuspeichern
 for (i in jahr) {
   feiertageJahr <- fromJSON(paste("https://feiertage-api.de/api/?jahr=", i, "&nur_land=SH", sep = ""))
   feiertage <- do.call(rbind.data.frame, feiertageJahr)
@@ -20,8 +22,8 @@ for (i in jahr) {
 }
 
 # Daten bereinigen: 
-# spalte mit feiertag = 1 hinzufügen,
-# Spalte mit Feiertagname hinzufügen (könnte vielleicht auch nützlich sein?
+# Spalte mit feiertag = 1 hinzufügen,
+# Spalte mit Feiertagname hinzufügen (könnte vielleicht auch nützlich sein?)
 feiertageSH <- feiertageSH %>%
   mutate(feiertag = 1, 
          feiertagName = row.names(feiertageSH)) %>%
@@ -31,4 +33,5 @@ feiertageSH <- feiertageSH %>%
 rownames(feiertageSH) <- c() 
 
 
+#Dastensatz abspeichern
 save(feiertageSH, file = "feiertageSH.Rda")
