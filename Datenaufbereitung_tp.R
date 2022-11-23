@@ -22,6 +22,7 @@ load("wettercodes.Rda")
 # MIttlere Temperatur in C
 # Mittlere Windgeschwindigkeit in m/s
 # Wettercode (http://www.seewetter-kiel.de/seewetter/daten_symbole.htm)
+# und in der Datei wettercodes.Rda
 
 # Variablen zuweisen (ggf. überflüssig)
 pj_wetter <- wetterDT
