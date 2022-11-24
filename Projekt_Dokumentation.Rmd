@@ -1,0 +1,89 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+# Projekt Dokumentation
+
+Aufgabe: 
+
+###Infos zu den gegebenen Daten
+
+Warengruppen: 
+* 1 = Brot
+* 2 = Brötchen 
+* 3 = Croissant
+* 4 = Konditorei
+* 5 = Kuchen
+* 6 = Saisonbrot
+
+Wetterdaten:
+* Mittlerer Bewölkungsgrad am Tag (0 = min, 8 = max)
+* MIttlere Temperatur in C
+* Mittlere Windgeschwindigkeit in m/s
+* Wettercode (http://www.seewetter-kiel.de/seewetter/daten_symbole.htm)
+* und in der Datei wettercodes.Rda
+
+### Vorbereitung
+##### verwendete libraries
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+# ...
+```
+
+##### Datensätze laden
+Wetterdaten wurden in "Datenaufbereitung_Wetter.R" vorbereitet
+Feiertagedaten wurden in "Datenaufbereitung_Feiertage.R" vorbereitet
+...
+
+```{r}
+# Lade Daten
+pj_wetter <- load("wetterDT.Rda")
+pj_kiwo <- load("kiwoDT.Rda")
+pj_umsatz <- load("umsatzDT.Rda")
+pj_feiertage <- load("feiertageHS.Rda")
+
+#hier gegenenenfalls noch mehr einfügen
+
+
+# Erste Betrachtung der Daten
+hist(pj_wetter$Wettercode)
+summary(pj_wetter)
+summary(pj_kiwo)
+summary(pj_umsatz)
+summary(pj_feier)
+
+```
+
+
+### Zusammenführung und Bereinigung der Datensätze
+
+```{r}
+
+
+# von Tobias:
+# --- Umsatz-DF optimieren und Daten zusammenstellen ---
+# Aus Long-Format ein Wide-Format machen
+pj_umsatz_wide <- spread(pj_umsatz, Warengruppe, Umsatz)
+summary(pj_umsatz_wide)
+
+# Wochentag hinzufügen (in neuer Spalte von pj_umsatz)
+pj_umsatz_wide$Wochentag <- weekdays(pj_umsatz_wide$Datum)
+
+# Merge erstellt automatisch die Schnittmenge
+pj_umsatz_wetter <- merge(pj_umsatz_wide, pj_wetter, by="Datum")
+
+# Der Zusatz all.x = TRUE sorgt dafür, dass keine Zeilen weggelöscht werden
+pj_um_we_ki <- merge(pj_umsatz_wetter, pj_kiwo, by="Datum", all.x = TRUE)
+summary(pj_um_we_ki)
+
+# Jetzt alle weiteren Datensätze hinzufügen, z.B. Feiertage etc.
+# ...
+
+
+
+```
+
+
