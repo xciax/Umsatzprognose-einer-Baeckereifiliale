@@ -4,7 +4,7 @@ output: html_notebook
 ---
 # Projekt Dokumentation
 
-Aufgabe: 
+Aufgabe: Vorhersage der Umsätze vom 9.6.2019 bis 30.07.2019 
 
 ###Infos zu den gegebenen Daten
 
@@ -30,6 +30,7 @@ Wetterdaten:
 library(tidyverse)
 library(lubridate)
 library(ggplot2)
+library(stringr)
 # ...
 ```
 
@@ -40,20 +41,39 @@ Feiertagedaten wurden in "Datenaufbereitung_Feiertage.R" vorbereitet
 
 ```{r}
 # Lade Daten
-pj_wetter <- load("wetterDT.Rda")
-pj_kiwo <- load("kiwoDT.Rda")
-pj_umsatz <- load("umsatzDT.Rda")
-pj_feiertage <- load("feiertageHS.Rda")
+load("wetter_ready.Rda")
+pj_wetter <- wetter_ready
+  
+load("kiwoDT.Rda")
+pj_kiwo <- kiwoDT
+  
+load("umsatzDT.Rda")
+pj_umsatz <- umsatzDT
 
-#hier gegenenenfalls noch mehr einfügen
+load("feiertageSH.Rda")
+pj_feiertage <- feiertageSH
 
+# hier gegenenenfalls noch mehr einfügen: 
+
+# Schulferien (eventuell händisch machen) -> Armando
+
+# verbaucherpreisindex oder Inflationsrate -> Cateria
+
+# andere -> Clara
+# Kreuzfahrtdaten 
+
+# Weizenpreis/Tag --> Eher doch nicht
+
+# Grippewellen
+
+# Tag des Monats
 
 # Erste Betrachtung der Daten
 hist(pj_wetter$Wettercode)
 summary(pj_wetter)
 summary(pj_kiwo)
 summary(pj_umsatz)
-summary(pj_feier)
+summary(pj_feiertage)
 
 ```
 
@@ -61,7 +81,6 @@ summary(pj_feier)
 ### Zusammenführung und Bereinigung der Datensätze
 
 ```{r}
-
 
 # von Tobias:
 # --- Umsatz-DF optimieren und Daten zusammenstellen ---
@@ -80,10 +99,40 @@ pj_um_we_ki <- merge(pj_umsatz_wetter, pj_kiwo, by="Datum", all.x = TRUE)
 summary(pj_um_we_ki)
 
 # Jetzt alle weiteren Datensätze hinzufügen, z.B. Feiertage etc.
-# ...
+# --> Feiertage sind komplett nicht mit drin, die Filiale scheint da also geschlossen gewesen zu sein
+allData <- merge(pj_um_we_ki, pj_feiertage, by="Datum", all.x = TRUE)
+
+
+# Datum auseinanderziehen
+allData$Tag <- 
+
+# Warengruppen bennen
+  
+# Spalte mit Gesamtumsatz hinzufügen
+
+allData$Gesamtumsatz <- 
+
+# NA mit 0 füllen, dort wo es Sinn ergibt (Kiwo)                            
+allData <- allData %>%
+  mutate_at(vars(KielerWoche, feiertag, feiertagName), ~replace(., is.na(.), 0) )
+
+
+```
 
 
 
+### lineare Regression
+
+maximierung des adjustierten R2
+
+```{r}
+mod1 <- lm(`1` ~ Temperatur + as.factor(Windstaerke), allData)
+mod2 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ as.factor(Bewoelkungsgrad), allData)
+mod3 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ as.factor(KielerWoche), allData)
+mod4 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ `2`, allData)
+mod4 <- lm(`2` ~ Temperatur + as.factor(Wochentag)+ `2`, allData)
+
+summary(mod4)
 ```
 
 
