@@ -41,7 +41,7 @@ summary(pj_feier)
 # Wetterdaten aufbereiten - Wettercode
 # Verteilung betrachten
 # Als Histogramm
-ggplot(pj_wetter, aes(x = Wettercode)) + geom_histogram()
+ggplot(pj_wetter, aes(x = as.factor(Wettercode))) + geom_histogram(stat = "count")
 
 # --- NEBENAUFGABE START ---
 # Analysieren, welche Wettercodes in welcher Häufigkeit auftreten
@@ -73,9 +73,33 @@ pj_wetter$Wettercode_neu <- pj_wetter$Wettercode
 pj_wetter$Wettercode_neu[pj_wetter$Wettercode_neu == 69|
                            pj_wetter$Wettercode_neu == 72|
                            pj_wetter$Wettercode_neu == 73|
-                           pj_wetter$Wettercode_neu == 75] <- 71
+                           pj_wetter$Wettercode_neu == 75] <- paste("Schneefall")
 
-# ... für weitere Codes angeben
+
+#Niederschlag/Nebel/Gewitter zuende
+NiederschlagEnde <- c(20, 21, 22, 25, 26, 28, 29)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% NiederschlagEnde] <-
+  paste("Niederschlag/Nebel/Gewitter Ende")
+
+#Nebel
+Nebel <- c(43, 45, 47, 49)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Nebel] <- paste("Nebel")
+
+#Sprühregen
+Sprühregen <- c(51, 53, 55, 58)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Sprühregen] <- paste("Sprühregen")
+
+#Regen
+Regen <- c(60, 61, 63, 65, 68, 69)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Regen] <- paste("Regen")
+
+#Schauer
+Schauer <- c(80, 81, 85)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Schauer] <- paste("Schauer")
+  
+#Gewitter                         
+Gewitter <- c(91, 95, 13, 17)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Gewitter] <- paste("Gewitter")
 
 
 # --- Umsatz-DF optimieren und Daten zusammenstellen ---
