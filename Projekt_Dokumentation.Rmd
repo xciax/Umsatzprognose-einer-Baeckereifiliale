@@ -60,7 +60,7 @@ pj_feiertage <- feiertageSH
 # verbaucherpreisindex oder Inflationsrate -> Cateria
 
 # andere -> Clara
-# Kreuzfahrtdaten 
+# Tourismus/Kreuzfahrtdaten 
 
 # Weizenpreis/Tag --> Eher doch nicht
 
