@@ -1,0 +1,115 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+### Lade notwendige Pakete
+```{r}
+install.packages("tidyr")
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+```
+
+### Lade notwendige Daten
+```{r}
+load("wetterDT.Rda")
+load("wettercodes.Rda")
+
+# Variablen zuweisen (ggf. überflüssig)
+pj_wetter <- wetterDT
+pj_wettercodes <- wettercodes
+```
+
+### Betrachtung der Rohdaten Wetter
+```{r}
+# Wetterdaten aufbereiten - Wettercode
+# Verteilung betrachten als Histogramm
+ggplot(pj_wetter, aes(x = as.factor(Wettercode))) + geom_histogram(stat = "count")
+
+# --- NEBENAUFGABE START ---
+# Analysieren, welche Wettercodes in welcher Häufigkeit auftreten
+# damit diese zu weniger Klassen zusammengefasst werden können
+
+# Als Dateframe (absolute Anzahl pro Klasse)
+pj_wcode <- pj_wetter %>%
+  group_by(Wettercode) %>%
+  summarise(n = n()) 
+
+# Die Spalten umbenennen
+names(pj_wcode) <- c("Code", "Anzahl")
+
+# Wettercodes und Verteilung zusammenfügen
+wcode_freq <- merge(pj_wettercodes, pj_wcode, by = "Code")
+
+# --- NEBENAUFGABE ENDE ---
+```
+
+### Wettercodes zusammenfassen
+```{r}
+# Zunächst eine neue Variable (Spalte) im df pj_wetter anlegen und mit dem bestehenden Code füllen
+pj_wetter$Wettercode_neu <- pj_wetter$Wettercode
+
+# Jetzt einzelne Codes ersetzen
+
+#Bewölkung_nicht_beobachtet
+Bewölkung_nicht_beobachtet <- c(0)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Bewölkung_nicht_beobachtet] <- paste("Bewölkung_nicht_beobachtet")
+
+#Bewölkung_auflösend_abnehmend
+Bewölkung_auflösend_abnehmend <- c(1)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Bewölkung_auflösend_abnehmend] <- paste("Bewölkung_auflösend_abnehmend")
+
+#Gleichbleibende_Bewölkung
+Gleichbleibende_Bewölkung <- c(2)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Gleichbleibende_Bewölkung] <- paste("Gleichbleibende_Bewölkung")
+
+#Zunehmende_Bewölkung
+Zunehmende_Bewölkung <- c(3)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Zunehmende_Bewölkung] <- paste("Zunehmende_Bewölkung")
+
+#Dunst_Staub
+Dunst_Staub <- c(4, 5, 6, 7, 8, 9)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Dunst_Staub] <- paste("Dunst_Staub")
+
+#Trockenereignisse
+Trockenereignisse <- c(10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Trockenereignisse] <- paste("Trockenereignisse")
+
+#Ereignisse_letzte_Stunde
+Ereignisse_letzte_Stunde <- c(20, 21, 22, 23, 24, 25, 26, 27, 28, 29)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Ereignisse_letzte_Stunde] <- paste("Ereignisse_letzte_Stunde")
+
+#Sandsturm_Schneefegen
+Sandsturm_Schneefegen <- c(30, 31, 32, 33, 34, 35, 36, 37, 38, 39)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Sandsturm_Schneefegen] <- paste("Sandsturm_Schneefegen")
+
+#Nebel_Eisnebel
+Nebel_Eisnebel <- c(40, 41, 42, 43, 44, 45, 46, 47, 48, 49)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Nebel_Eisnebel] <- paste("Nebel_Eisnebel")
+
+#Sprühregen
+Sprühregen <- c(50, 51, 52, 53, 54, 55, 56, 57, 58, 59)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Sprühregen] <- paste("Sprühregen")
+
+#Regen
+Regen <- c(60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Regen] <- paste("Regen")
+
+#Schnee
+Schnee <- c(70, 71, 72, 73, 74, 75, 76, 77, 78, 79)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Schnee] <- paste("Schnee")
+
+#Schauer
+Schauer <- c(80, 81, 82, 83, 84, 85, 86, 87, 88, 89)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Schauer] <- paste("Schauer")
+
+#Gewitter                         
+Gewitter <- c(90, 91, 92, 93, 94, 95, 96, 97, 98, 99)
+pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Gewitter] <- paste("Gewitter")
+```
+
+### Jetzt noch ein Dummy-Encoding durchführen
+```{r}
+
+```
+
