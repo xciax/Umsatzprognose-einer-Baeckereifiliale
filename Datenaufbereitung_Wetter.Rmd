@@ -106,10 +106,16 @@ pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Schauer] <- paste("Schauer")
 #Gewitter                         
 Gewitter <- c(90, 91, 92, 93, 94, 95, 96, 97, 98, 99)
 pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Gewitter] <- paste("Gewitter")
+
+# Abschließende Statistik
+summary(pj_wetter)
 ```
 
 ### Jetzt noch ein Dummy-Encoding durchführen
 ```{r}
+pj_wetter_dummy <- dummy_cols(pj_wetter, select_columns="Wettercode_neu", ignore_na = FALSE)
 
+# Spalten umbenennen
+names(pj_wetter_dummy) <- c("Datum", "Bewoelkung", "Temperatur", "Windgeschw", "Wettercode", "Bewölkung_nicht_beobachtet", "Bewölkung_auflösend_abnehmend", "Gleichbleibende_Bewölkung", "Zunehmende_Bewölkung", "Dunst_Staub", "Trockenereignisse", "Ereignisse_letzte_Stunde", "Sandsturm_Schneefegen", "Nebel_Eisnebel", "Sprühregen", "Regen", "Schnee", "Schauer", "Gewitter", "Kein_Wert")
 ```
 
