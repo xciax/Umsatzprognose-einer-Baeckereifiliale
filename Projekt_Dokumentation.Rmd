@@ -53,6 +53,9 @@ pj_umsatz <- umsatzDT
 load("feiertageSH.Rda")
 pj_feiertage <- feiertageSH
 
+
+pj_VPI <- read.csv(file = "verbraucherpreisindex.csv", sep= ";")
+
 # hier gegenenenfalls noch mehr einfügen: 
 
 # Schulferien (eventuell händisch machen) -> Armando
@@ -91,30 +94,51 @@ summary(pj_umsatz_wide)
 # Wochentag hinzufügen (in neuer Spalte von pj_umsatz)
 pj_umsatz_wide$Wochentag <- weekdays(pj_umsatz_wide$Datum)
 
+
 # Merge erstellt automatisch die Schnittmenge
-pj_umsatz_wetter <- merge(pj_umsatz_wide, pj_wetter, by="Datum")
+pj_umsatz_wetter <- merge(pj_umsatz_wide, pj_wetter_dummy, by="Datum")
 
 # Der Zusatz all.x = TRUE sorgt dafür, dass keine Zeilen weggelöscht werden
-pj_um_we_ki <- merge(pj_umsatz_wetter, pj_kiwo, by="Datum", all.x = TRUE)
-summary(pj_um_we_ki)
+allData <- merge(pj_umsatz_wetter, pj_kiwo, by="Datum", all.x = TRUE)
+
+allData <- merge(pj_VPI , allData)
 
 # Jetzt alle weiteren Datensätze hinzufügen, z.B. Feiertage etc.
 # --> Feiertage sind komplett nicht mit drin, die Filiale scheint da also geschlossen gewesen zu sein
-allData <- merge(pj_um_we_ki, pj_feiertage, by="Datum", all.x = TRUE)
+#allData <- merge(pj_um_we_ki, pj_feiertage, by="Datum", all.x = TRUE)
+
 
 
 # Datum auseinanderziehen
-allData$Tag <- 
+
 
 # Warengruppen bennen
-  
-# Spalte mit Gesamtumsatz hinzufügen
-
-allData$Gesamtumsatz <- 
-
+ allData <- allData %>%
+  rename("Brot" = `1`,
+         "Brötchen" = `2`,
+         "Croissant" = `3`,
+         "Konditorei" = `4`, 
+         "Kuchen" = `5`,
+         "Saisonbrot" = `6`) 
+ 
 # NA mit 0 füllen, dort wo es Sinn ergibt (Kiwo)                            
 allData <- allData %>%
-  mutate_at(vars(KielerWoche, feiertag, feiertagName), ~replace(., is.na(.), 0) )
+  mutate_at(vars(KielerWoche, Saisonbrot), ~replace(., is.na(.), 0) )
+
+#oder so:
+allData$Saisonbrot <- replace_na(allData$Saisonbrot, 0)
+allData$KielerWoche <- replace_na(allData$KielerWoche, 0)
+
+# dummy coding Wochentage
+allData_dummy <- dummy_cols(allData, select_columns = "Wochentag")
+#Wochentag Spalte raus 
+allData_dummy$Wochentag <- NULL
+
+#alle NA löschen
+
+allData_dummy <- na.omit(allData_dummy)
+
+summary(allData_dummy)
 
 
 ```
