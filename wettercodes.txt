@@ -1,0 +1,101 @@
+Code	Wettererscheinung oder -zustand
+0	Bewölkungsentwicklung nicht beobachtet
+1	Bewölkung auflösend oder abnehmend
+2	Gleichbleibende Bewölkung
+3	Zunehmende Bewölkung
+4	Sicht durch Rauch oder Asche verringert
+5	Trockener Dunst
+6	Verbreiteter Schwebstaub
+7	Staub- oder Sandfegen, aber kein Sandsturm oder Staubteufel
+8	Staub- oder Sandwirbel (Staubteufel oder Kleintrombe)
+9	Staub- oder Sandsturm in Sichtweite aber nicht an der Station
+10	Feuchter Dunst
+11	Flacher Nebel mit geringer Höhenausdehnung in Schwaden oder Bänken
+12	Durchgehende flache Nebelschicht mit geringer Höhenausdehnung
+13	Wetterleuchten sichtbar aber kein Donner höbar
+14	Niederschlag sichtbar (Fallstreifen), der aber nicht den Boden erreicht
+15	Niederschlag in der Ferne weiter als 5 km, aber nicht an der Station
+16	Niederschlag näher als 5 km, aber nicht direkt an der Station
+17	Gewitter mit hörbarem Donner, aber kein Niederschlag an der Station
+18	Markante Böen im Gesichtskreis oder an der Station, aber kein Niederschlag
+19	Tromben (trichterförmige Wolkenschläuche) oder Tornados in der Nähe oder an der Station
+20	Sprühregen oder Schneegriesel hat aufgehört
+21	Regen hat aufgehört
+22	Schneefall hat aufgehört
+23	Schneeregen oder Fall von Eiskörnern hat aufgehört
+24	Gefrierender Regen hat aufgehört
+25	Regenschauer hat aufgehört
+26	Schneeschauer hat aufgehört
+27	Graupel- oder Hagelschauer hat aufgehört
+28	Nebel hat sich aufgelöst
+29	Gewitter hat aufgehört
+30	Leichter oder mäßiger Sandsturm, Stärke abnehmend
+31	Leichter oder mäßiger Sandsturm, Stärke unverändert
+32	Leichter oder mäßiger Sandsturm, Stärke zunehmend
+33	Starker Sandsturm, Stärke abnehmend
+34	Starker Sandsturm, Stärke unverändert
+35	Starker Sandsturm, Stärke zunehmend
+36	Leichtes oder mäßiges Schneefegen unter Augenhöhe
+37	Starkes Schneefegen unter Augenhöhe
+38	Leichtes oder mäßiges Schneetreiben über Augenhöhe
+39	Starkes Schneetreiben über Augenhöhe
+40	Nebel in einiger Entfernung, den Beobachter nicht erreichend
+41	Nebel in Schwaden oder Bänken
+42	Nebel, Himmel ist erkennbar, Nebel dünner werdend
+43	Nebel, Himmel ist nicht erkennbar, Nebel dünner werdend
+44	Nebel, Himmel ist erkennbar, Nebel unverändert
+45	Nebel, Himmel ist nicht erkennbar, Nebel unverändert
+46	Nebel, Himmel ist erkennbar, Nebel wird dichter
+47	Nebel, Himmel ist nicht erkennbar, Nebel wird dichter
+48	Nebel mit Reifbildung, Himmel ist erkennbar
+49	Nebel mit Reifbildung, Himmel ist nicht erkennbar
+50	Unterbrochener leichter und nicht gefrierender Sprühregen
+51	Leichter und durchgehender nicht gefrierender Sprühregen
+52	Unterbrochener mäßiger nicht gefrierender Sprühregen
+53	Durchgehender mäßiger und nicht gefrierender Sprühregen
+54	Unterbrochener starker und nicht gefrierender Sprühregen
+55	Durchgehender starker und nicht gefrierender Sprühregen
+56	Leichter und gefrierender Sprühregen
+57	Mäßiger oder starker gefrierender Sprühregen
+58	Leichter Sprühregen mit Regen vermischt
+59	Mäßiger oder starker Sprühregen mit Regen vermischt
+60	Unterbrochener leichter nicht gefrierender Regen oder einzelne Regentropfen
+61	Durchgehender leichter und nicht gefrierender Regen
+62	Unterbrochener und mäßiger nicht gefrierender Regen
+63	Durchgehender mäßiger nicht gefrierender Regen
+64	Unterbrochener starker und nicht gefrierender Regen
+65	Durchgehender starker und nicht gefrierender Regen
+66	Leichter gefrierender Regen
+67	Mäßiger oder starker gefrierender Regen
+68	Leichter Schneeregen
+69	Mäßiger oder starker Schneeregen
+70	Unterbrochener leichter Schneefall oder einzelne Schneeflocken
+71	Durchgehender leichter Schneefall
+72	Unterbrochener mäßiger Schneefall
+73	Durchgehender mäßiger Schneefall
+74	Unterbrochener starker Schneefall
+75	Durchgehender starker Schneefall
+76	Eisnadeln (Polarschnee) mit oder ohne Nebel
+77	Schneegrieseln mit oder ohne Nebel
+78	Schneekristalle mit oder ohne Nebel
+79	Eiskörner (gefrorene Regentropfen)
+80	Leichter Regenschauer
+81	Mäßiger oder starker Regenschauer
+82	Sehr heftiger Regenschauer
+83	Leichter Schneeregenschauer
+84	Mäßiger oder starker Schneeregenschauer
+85	Leichter Schneeschauer
+86	Mäßiger oder starker Schneeschauer
+87	Leichter Graupelschauer
+88	Mäßiger oder starker Graupelschauer
+89	Leichter Hagelschauer
+90	Mäßiger oder starker Hagelschauer
+91	Gewitter in der letzten Stunde, leichter Regen zum Beobachtungszeitpunkt
+92	Gewitter in der letzten Stunde, mäßiger oder starker Regen zum Beobachtungszeitpunkt
+93	Gewitter in der letzten Stunde, leichter Schneefall, Schneeregen, Graupel oder Hagel zum Beobachtungszeitpunkt
+94	Gewitter in der letzten Stunde, mäßiger oder starker Schneefall, Schneeregen, Graupel oder Hagel zum Beobachtungszeitpunkt
+95	Leichtes oder mäßiges Gewitter mit Regen oder Schnee
+96	Leichtes oder mäßiges Gewitter mit Graupel oder Hagel
+97	Starkes Gewitter mit Regen oder Schnee
+98	Starkes Gewitter mit Sandsturm
+99	Starkes Gewitter mit Graupel oder Hagel
