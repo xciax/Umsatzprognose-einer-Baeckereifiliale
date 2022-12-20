@@ -23,26 +23,37 @@ Wetterdaten:
 * Wettercode (http://www.seewetter-kiel.de/seewetter/daten_symbole.htm)
 * und in der Datei wettercodes.Rda
 
-### Vorbereitung
-##### verwendete libraries
+## Vorbereitung ##
+
+##### benötigte Libraries laden #####
 
 ```{r}
-library(tidyverse)
-library(lubridate)
-library(ggplot2)
-library(stringr)
-# ...
+
+# Create list with needed libraries
+pkgs <- c("lubridate", "stringr","tidyverse", "readr", 
+          "fastDummies", "reticulate", "ggplot2", "Metrics")
+
+# Load each listed library and check if it is installed and install if necessary
+for (pkg in pkgs) {
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg)
+    library(pkg, character.only = TRUE)
+  }
+}
+
 ```
 
-##### Datensätze laden
-Wetterdaten wurden in "Datenaufbereitung_Wetter.R" vorbereitet
-Feiertagedaten wurden in "Datenaufbereitung_Feiertage.R" vorbereitet
+
+##### Vorbereitete Datensätze laden #####
+
+* Wetterdaten wurden in "Datenaufbereitung_Wetter.Rmd" vorbereitet
+* Feiertagedaten wurden in "Datenaufbereitung_Feiertage.R" vorbereitet
 ...
 
 ```{r}
 # Lade Daten
-load("wetter_ready.Rda")
-pj_wetter <- wetter_ready
+load("pj_wetter_dummy.Rda")
+pj_wetter <- pj_wetter_dummy
   
 load("kiwoDT.Rda")
 pj_kiwo <- kiwoDT
@@ -53,22 +64,16 @@ pj_umsatz <- umsatzDT
 load("feiertageSH.Rda")
 pj_feiertage <- feiertageSH
 
-
+#VPI müsste noch vorbereitet werden zur Verwendung
 pj_VPI <- read.csv(file = "verbraucherpreisindex.csv", sep= ";")
 
 # hier gegenenenfalls noch mehr einfügen: 
 
-# Schulferien (eventuell händisch machen) -> Armando
-
-# verbaucherpreisindex oder Inflationsrate -> Cateria
-
-# andere -> Clara
+# Schulferien (eventuell händisch machen) 
+# verbaucherpreisindex oder Inflationsrate
 # Tourismus/Kreuzfahrtdaten 
-
-# Weizenpreis/Tag --> Eher doch nicht
-
+# Weizenpreis/Tag 
 # Grippewellen
-
 # Tag des Monats
 
 # Erste Betrachtung der Daten
@@ -81,12 +86,12 @@ summary(pj_feiertage)
 ```
 
 
-### Zusammenführung und Bereinigung der Datensätze
+## Zusammenführung und Bereinigung der Datensätze ##
 
 ```{r}
 
-# von Tobias:
 # --- Umsatz-DF optimieren und Daten zusammenstellen ---
+
 # Aus Long-Format ein Wide-Format machen
 pj_umsatz_wide <- spread(pj_umsatz, Warengruppe, Umsatz)
 summary(pj_umsatz_wide)
@@ -94,60 +99,59 @@ summary(pj_umsatz_wide)
 # Wochentag hinzufügen (in neuer Spalte von pj_umsatz)
 pj_umsatz_wide$Wochentag <- weekdays(pj_umsatz_wide$Datum)
 
-
 # Merge erstellt automatisch die Schnittmenge
-pj_umsatz_wetter <- merge(pj_umsatz_wide, pj_wetter_dummy, by="Datum")
+pj_umsatz_wetter <- merge(pj_umsatz_wide, pj_wetter, by="Datum")
 
 # Der Zusatz all.x = TRUE sorgt dafür, dass keine Zeilen weggelöscht werden
 allData <- merge(pj_umsatz_wetter, pj_kiwo, by="Datum", all.x = TRUE)
 
-allData <- merge(pj_VPI , allData)
+
 
 # Jetzt alle weiteren Datensätze hinzufügen, z.B. Feiertage etc.
 # --> Feiertage sind komplett nicht mit drin, die Filiale scheint da also geschlossen gewesen zu sein
-#allData <- merge(pj_um_we_ki, pj_feiertage, by="Datum", all.x = TRUE)
-
-
+# allData <- merge(pj_um_we_ki, pj_feiertage, by="Datum", all.x = TRUE)
+# Verbaucherpreisindex eventuell noch mit dazunehmen --> erstmal nicht
+# allData <- merge(pj_VPI , allData)
 
 # Datum auseinanderziehen
 
 
-# Warengruppen bennen
+# Warengruppen bennen und 
+# NA mit 0 füllen, dort wo es Sinn ergibt (Kiwo, Saisonbrot)                            
  allData <- allData %>%
   rename("Brot" = `1`,
          "Brötchen" = `2`,
          "Croissant" = `3`,
          "Konditorei" = `4`, 
          "Kuchen" = `5`,
-         "Saisonbrot" = `6`) 
+         "Saisonbrot" = `6`) %>%
+    mutate_at(vars(KielerWoche, Saisonbrot), ~replace(., is.na(.), 0) )
  
-# NA mit 0 füllen, dort wo es Sinn ergibt (Kiwo)                            
-allData <- allData %>%
-  mutate_at(vars(KielerWoche, Saisonbrot), ~replace(., is.na(.), 0) )
+# NA zu 0 geht auch so:
+# allData$Saisonbrot <- replace_na(allData$Saisonbrot, 0)
+# allData$KielerWoche <- replace_na(allData$KielerWoche, 0)
 
-#oder so:
-allData$Saisonbrot <- replace_na(allData$Saisonbrot, 0)
-allData$KielerWoche <- replace_na(allData$KielerWoche, 0)
-
-# dummy coding Wochentage
+# dummy coding der Wochentage
 allData_dummy <- dummy_cols(allData, select_columns = "Wochentag")
-#Wochentag Spalte raus 
+
+# Wochentag Spalte raus 
 allData_dummy$Wochentag <- NULL
 
-#alle NA löschen
-
+# alle restlichen NAim gesamten Datensatz löschen
 allData_dummy <- na.omit(allData_dummy)
 
+# Datensatz Überprüfen
 summary(allData_dummy)
 
+save(allData_dummy, file="projectData_dummy.Rda")
 
 ```
 
 
 
-### lineare Regression
+## lineare Regression ##
 
-maximierung des adjustierten R2
+### Maximierung des adjustierten R2
 
 ```{r}
 mod1 <- lm(`1` ~ Temperatur + as.factor(Windstaerke), allData)
@@ -157,6 +161,170 @@ mod4 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ `2`, allData)
 mod4 <- lm(`2` ~ Temperatur + as.factor(Wochentag)+ `2`, allData)
 
 summary(mod4)
+```
+
+
+## Neuronales Netz ##
+
+### Datenaufbereitung: 
+1. Features und Label definieren
+2. Datensatz teilen in Trainingsdaten und Validierungsdaten
+
+!! AB HIER MÜSSEN UNSERE DATEN EINGESETZT WERDEN !!
+
+```{r}
+###################################################
+### Selection of the Feature Variables and the Label Variable ####
+
+# Selection of the features (the independent variables used to predict the dependent)
+#features <- c('sqft_lot', 'waterfront', 'grade', 'bathrooms', view_dummies, condition_dummies)
+features <- c('sqft_lot', 'waterfront', 'grade', 'bathrooms', condition_dummies, view_dummies)
+# Selection of the label (the dependent variable)
+labels <- 'price'
+
+
+###################################################
+### Selection of Training, Validation and Test Data ####
+
+# Look at the data
+str(house_pricing_dummy)
+
+# Setting the random counter to a fixed value, so the random initialization stays the same (the random split is always the same)
+set.seed(1)
+
+# Assign each row number in the full dataset randomly to one of the two groups (i.e. either training or validation dataset)
+# Thereby the samples are randomly shuffled and 
+# the probability of being in one of the groups results in corresponding group sizes
+assignment <- sample(1:2, size = nrow(house_pricing_dummy), prob = c(.8, .2), replace = TRUE)
+
+# Create training, validation and test data for the features and the labels
+training_features <- house_pricing_dummy[assignment == 1, features]    # subset house_pricing to training indices only
+training_labels <- house_pricing_dummy[assignment == 1, labels]    # subset house_pricing to training indices only
+
+validation_features <- house_pricing_dummy[assignment == 2, features]  # subset house_pricing to validation indices only
+validation_labels <- house_pricing_dummy[assignment == 2, labels]  # subset house_pricing to validation indices only
+
+#are there any missing values?
+table(is.na(training_features))
+
+#neuronal networks can't handle missing values --> delete!
+
+```
+
+
+### Modell aufstellen in Python
+
+```{python}
+# Import needed Python libraries and functions
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import InputLayer, Dense, BatchNormalization, Dropout
+from tensorflow.keras.optimizers import Adam
+
+
+# The argument "input_shape" for the definition of the input layer must include 
+# the number of input variables (features) used for the model. 
+# To automatically calculate this number we use the function `r.training_features.keys()`, 
+# which returns the list of variable names of the dataframe `training_features`.
+# Then, the funtion `len()` returns the length of this list of variable names 
+# (i.e. the number of variables in the input)
+
+model = Sequential([
+  InputLayer(input_shape = (len(r.training_features.keys()), )),
+  BatchNormalization(),
+  Dense(10, activation = 'relu'),
+  Dense(4, activation = 'relu'),
+  Dense(1)
+])
+
+# Ausgabe einer ZUsammenfassung zur Form des MOdells, das geschätzt wird (nicht notwendig)
+model.summary()
+
+```
+
+
+### Schätzung de neuronalen Netzes
+
+```{python}
+# definition of the loss function and the optimazation function with hyperparameters
+model.compile(loss="mse", optimizer=Adam(learning_rate=0.001))
+
+#Schätzung des Modells
+history = model.fit(r.training_features, r.training_labels, epochs = 200,
+                    validation_data = (r.validation_features, r.validation_labels), verbose = 0)
+
+
+#save model
+model.save("python_model.h5")
+
+```
+
+
+### graphische Ausgabe der Modelloptimierung 
+
+```{r}
+# Graphische Ausgabe der Modelloptimierung
+
+#create data
+data <- data.frame(val_loss = unlist(py$history$history$val_loss),
+                   loss = unlist(py$history$history$loss))
+
+ggplot(data[-(1:10), ])+
+  geom_line(aes(x = 1:length(val_loss), y = val_loss, colour = "Validation Loss")) +
+  geom_line(aes(x = 1:length(loss), y = loss, colour = "Training Loss")) +
+  scale_colour_manual(values = c("Training Loss"="blue", "Validation Loss" = "red")) +
+  labs(title = "Loss Function Values During Optimazation") +
+  xlab("Iteration Number") +
+  ylab("Loss")
+
+
+```
+
+### Auswertung der Schätzergebnisse
+```{r}
+# Schätzung der (normierten) Preise für die Trainings- und Testdaten
+training_predictions <- py$model$predict(training_features)
+validation_predictions <- py$model$predict(validation_features)
+
+# Vergleich der Gütekriterien für die Traingings- und Testdaten
+cat(paste0("MAPE on the Training Data:\t", format(mape(training_labels[[1]], training_predictions)*100, digits=3, nsmall=2)))
+
+cat(paste0("\nMAPE on the Validation Data:\t", format(mape(validation_labels[[1]], validation_predictions)*100, digits=3, nsmall=2)))
+
+```
+
+```{r}
+## Grafischer vergleich der vorhergesagten und der tatsächlichen Preise für die Trainings- und Testdaten
+# Zusammenstellung der Daten für die Plots
+data_train <- data.frame(prediction = training_predictions/1000, actual = training_labels[[1]]/1000)
+data_test <- data.frame(prediction = validation_predictions/1000, actual = validation_labels[[1]]/1000)
+
+# Plot der Ergebnisse der Trainingsdaten
+ggplot(data_train[1:100,]) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
+  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
+  labs(title="Predicted and Actual Values for the Training Data") +
+  xlab("Case Number") +
+  ylab("Price in 1.000 USD") 
+
+# Plot der Ergebnisse der Validierungsdaten
+ggplot(data_test[1:100,]) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
+  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
+  labs(title="Predicted and Actual Values for the Test Data") +
+  xlab("Case Number") +
+  ylab("Price in 1.000 USD") 
+```
+
+```{r}
+# Vorhersage für einen einzelnen Fall
+cat(paste0("Vorhergesagter Preis:\t", round(validation_predictions[100])))
+
+cat(paste0("\nTatsächlicher Preis:\t", validation_labels[[1]][100]))
+
 ```
 
 

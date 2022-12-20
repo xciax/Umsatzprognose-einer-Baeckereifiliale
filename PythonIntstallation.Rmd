@@ -1,0 +1,85 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+### Installation von Python und der für TensorFlow benötigten Pakete (nur einmalig nötig) ###
+
+```{r}
+install.packages("reticulate")
+library(reticulate)
+
+install.packages("openssl", path = "C:/Users/clara/AppData/Local")
+library(openssl)
+
+# Installation von miniconda (falls nicht vorhanden)
+install_miniconda(path = "c:/Users/clara/AppData/Local/mconda",
+                  update = FALSE, 
+                  force = TRUE)
+options(reticulate.conda_binary = "C:/Users/clara/AppData/Local/mconda")
+conda_binary()
+miniconda_path()
+
+
+# Anlegen einer speziellen Python Umgebung
+conda_create("r-reticulate", python_version = "3.8")
+
+# Installieren der Pakete in der angelegten Umgebung
+conda_install("r-reticulate", "pandas")
+conda_install("r-reticulate", "numpy")
+conda_install("r-reticulate", "tensorflow")
+conda_install("r-reticulate", "h5py")
+
+install_tensorflow(envname = "r-reticulate")
+keras::install_keras(envname = "r-reticulate")
+
+install.packages("tensorflow", path="c:/Users/clara/AppData/Local")
+install.packages("keras")
+library(tensorflow)
+
+
+# Verwenden der speziellen Python Umgebung die zuvor erstellt wurde
+use_condaenv("r-reticulate")
+
+import("tensorflow" )
+library(keras)
+
+
+```
+
+
+
+```{python}
+import sys
+import tensorflow
+import pandas
+
+pip install tensorflow
+
+
+print("Python Version:     " + sys.version+"\nTensorFlow Version: "+tensorflow.__version__)
+
+```
+
+```{r}
+# Import Libraries
+library(reticulate)
+
+
+# Importing Data
+data <- mtcars
+
+```
+
+
+```{python}
+mpg = r.data['mpg']
+
+```
+
+
+```{r}
+table(py$mpg)
+
+```
+

@@ -115,7 +115,8 @@ summary(pj_wetter)
 ```{r}
 pj_wetter_dummy <- dummy_cols(pj_wetter, select_columns="Wettercode_neu", ignore_na = FALSE)
 
-# Spalten umbenennen
-names(pj_wetter_dummy) <- c("Datum", "Bewoelkung", "Temperatur", "Windgeschw", "Wettercode", "Bewölkung_nicht_beobachtet", "Bewölkung_auflösend_abnehmend", "Gleichbleibende_Bewölkung", "Zunehmende_Bewölkung", "Dunst_Staub", "Trockenereignisse", "Ereignisse_letzte_Stunde", "Sandsturm_Schneefegen", "Nebel_Eisnebel", "Sprühregen", "Regen", "Schnee", "Schauer", "Gewitter", "Kein_Wert")
-```
+save(pj_wetter_dummy, "pj_wetter_dummy.Rda")
 
+# Spalten umbenennen --> führt zu Fehler!
+# names(pj_wetter_dummy) <- c("Datum", "Bewoelkung", "Temperatur", "Windgeschw", "Wettercode", "Bewölkung_nicht_beobachtet", "Bewölkung_auflösend_abnehmend", "Gleichbleibende_Bewölkung", "Zunehmende_Bewölkung", "Dunst_Staub", "Trockenereignisse", "Ereignisse_letzte_Stunde", "Sandsturm_Schneefegen", "Nebel_Eisnebel", "Sprühregen", "Regen", "Schnee", "Schauer", "Gewitter", "Kein_Wert")
+```
