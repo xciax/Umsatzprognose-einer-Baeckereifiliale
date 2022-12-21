@@ -48,6 +48,7 @@ for (pkg in pkgs) {
 
 * Wetterdaten wurden in "Datenaufbereitung_Wetter.Rmd" vorbereitet
 * Feiertagedaten wurden in "Datenaufbereitung_Feiertage.R" vorbereitet
+* Schulferien wurden in "Datenaufbereitung_Schulferien.R" vorbereitet
 ...
 
 ```{r}
@@ -61,11 +62,14 @@ pj_kiwo <- kiwoDT
 load("umsatzDT.Rda")
 pj_umsatz <- umsatzDT
 
-load("feiertageSH.Rda")
-pj_feiertage <- feiertageSH
+# load("feiertageSH.Rda")
+# pj_feiertage <- feiertageSH
+
+load("schulferien.Rda")
+pj_schulferien <- schulferien
 
 #VPI müsste noch vorbereitet werden zur Verwendung
-pj_VPI <- read.csv(file = "verbraucherpreisindex.csv", sep= ";")
+#pj_VPI <- read.csv(file = "verbraucherpreisindex.csv", sep= ";")
 
 # hier gegenenenfalls noch mehr einfügen: 
 
@@ -102,8 +106,10 @@ pj_umsatz_wide$Wochentag <- weekdays(pj_umsatz_wide$Datum)
 # Merge erstellt automatisch die Schnittmenge
 pj_umsatz_wetter <- merge(pj_umsatz_wide, pj_wetter, by="Datum")
 
+pj_umsatz_wetter_ferien <- merge(pj_umsatz_wetter, pj_schulferien, by="Datum", all.x = TRUE)
+
 # Der Zusatz all.x = TRUE sorgt dafür, dass keine Zeilen weggelöscht werden
-allData <- merge(pj_umsatz_wetter, pj_kiwo, by="Datum", all.x = TRUE)
+allData <- merge(pj_umsatz_wetter_ferien, pj_kiwo, by="Datum", all.x = TRUE)
 
 
 
@@ -113,11 +119,10 @@ allData <- merge(pj_umsatz_wetter, pj_kiwo, by="Datum", all.x = TRUE)
 # Verbaucherpreisindex eventuell noch mit dazunehmen --> erstmal nicht
 # allData <- merge(pj_VPI , allData)
 
-# Datum auseinanderziehen
-
+# Datum auseinanderziehen? --> noch machen um Einfluss von Tag des Monats zu betrachten
 
 # Warengruppen bennen und 
-# NA mit 0 füllen, dort wo es Sinn ergibt (Kiwo, Saisonbrot)                            
+# NA mit 0 füllen, dort wo es Sinn ergibt (Kiwo, Saisonbrot, Schulferien)                            
  allData <- allData %>%
   rename("Brot" = `1`,
          "Brötchen" = `2`,
@@ -125,9 +130,8 @@ allData <- merge(pj_umsatz_wetter, pj_kiwo, by="Datum", all.x = TRUE)
          "Konditorei" = `4`, 
          "Kuchen" = `5`,
          "Saisonbrot" = `6`) %>%
-    mutate_at(vars(KielerWoche, Saisonbrot), ~replace(., is.na(.), 0) )
- 
-# NA zu 0 geht auch so:
+    mutate_at(vars(KielerWoche, Saisonbrot, Schulferien), ~replace(., is.na(.), 0) )
+ # NA zu 0 geht auch so:
 # allData$Saisonbrot <- replace_na(allData$Saisonbrot, 0)
 # allData$KielerWoche <- replace_na(allData$KielerWoche, 0)
 
@@ -144,6 +148,11 @@ allData_dummy <- na.omit(allData_dummy)
 summary(allData_dummy)
 
 save(allData_dummy, file="projectData_dummy.Rda")
+
+
+#------------------------------------------------------------------------------#
+# AB HIER STARTEN MIT:
+load("projectData_dummy.Rda")
 
 ```
 
@@ -178,16 +187,21 @@ summary(mod4)
 
 # Selection of the features (the independent variables used to predict the dependent)
 #features <- c('sqft_lot', 'waterfront', 'grade', 'bathrooms', view_dummies, condition_dummies)
-features <- c('sqft_lot', 'waterfront', 'grade', 'bathrooms', condition_dummies, view_dummies)
+
+bewoelkung_dummies <- c("Bewoelkungsgrad_keine", "Bewoelkungsgrad_gering", "Bewoelkungsgrad_mittel", "Bewoelkungsgrad_stark")
+wettercode_dummies <- c( "Wettercode_neu_Bewölkung_auflösend_abnehmend", "Wettercode_neu_Bewölkung_nicht_beobachtet", "Wettercode_neu_Dunst_Staub", "Wettercode_neu_Ereignisse_letzte_Stunde", "Wettercode_neu_Gewitter", "Wettercode_neu_Gleichbleibende_Bewölkung", "Wettercode_neu_Nebel_Eisnebel", "Wettercode_neu_Regen", "Wettercode_neu_Schauer", "Wettercode_neu_Schnee", "Wettercode_neu_Sprühregen",         "Wettercode_neu_Trockenereignisse", "Wettercode_neu_Zunehmende_Bewölkung", "Wettercode_neu_NA")
+wochentag_dummies <- c("Wochentag_Montag", "Wochentag_Dienstag", "Wochentag_Mittwoch", "Wochentag_Donnerstag", "Wochentag_Freitag", "Wochentag_Samstag", "Wochentag_Sonntag")
+
+features <- c(bewoelkung_dummies, wettercode_dummies, wochentag_dummies, "Temperatur", "Windstaerke", "KielerWoche", "Schulferien")
 # Selection of the label (the dependent variable)
-labels <- 'price'
+labels <- c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen", "Saisonbrot")
 
 
 ###################################################
 ### Selection of Training, Validation and Test Data ####
 
 # Look at the data
-str(house_pricing_dummy)
+str(allData_dummy)
 
 # Setting the random counter to a fixed value, so the random initialization stays the same (the random split is always the same)
 set.seed(1)
@@ -195,14 +209,14 @@ set.seed(1)
 # Assign each row number in the full dataset randomly to one of the two groups (i.e. either training or validation dataset)
 # Thereby the samples are randomly shuffled and 
 # the probability of being in one of the groups results in corresponding group sizes
-assignment <- sample(1:2, size = nrow(house_pricing_dummy), prob = c(.8, .2), replace = TRUE)
+assignment <- sample(1:2, size = nrow(allData_dummy), prob = c(.8, .2), replace = TRUE)
 
 # Create training, validation and test data for the features and the labels
-training_features <- house_pricing_dummy[assignment == 1, features]    # subset house_pricing to training indices only
-training_labels <- house_pricing_dummy[assignment == 1, labels]    # subset house_pricing to training indices only
+training_features <- allData_dummy[assignment == 1, features]    # subset house_pricing to training indices only
+training_labels <- allData_dummy[assignment == 1, labels]    # subset house_pricing to training indices only
 
-validation_features <- house_pricing_dummy[assignment == 2, features]  # subset house_pricing to validation indices only
-validation_labels <- house_pricing_dummy[assignment == 2, labels]  # subset house_pricing to validation indices only
+validation_features <- allData_dummy[assignment == 2, features]  # subset house_pricing to validation indices only
+validation_labels <- allData_dummy[assignment == 2, labels]  # subset house_pricing to validation indices only
 
 #are there any missing values?
 table(is.na(training_features))

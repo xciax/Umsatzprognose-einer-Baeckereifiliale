@@ -111,11 +111,46 @@ pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Gewitter] <- paste("Gewitter"
 summary(pj_wetter)
 ```
 
+
+### Windgeschwindigkeit zu Windstärke und Bewölkung zu Bewölkungsgrad zusammenfassen
+```{r}
+#windgeschwindigkeit in m/s zusammenfassen in Windstärken 
+# dt mit Windstärken und Windgeschwindigkeit erstellen
+Windstaerke <- c(0, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 9, 9, 10, 10, 10, 10, 11, 11, 11, 11, 12)
+Windgeschwindigkeit <- c(0, 1, 2:3, 4:5, 6:7, 8:10, 11:13, 14:17, 18:20, 21:24, 25:28, 29:32, 33)
+windstaerken <- data.frame(cbind(Windstaerke, Windgeschwindigkeit))
+
+# zu Wetterdaten hinzufügen
+pj_wetter <- merge(pj_wetter, windstaerken, by = "Windgeschwindigkeit", all.x = TRUE)
+
+# Bewölkung qualitativ zusammenfassen
+# 0 = keine, 1-2 = gering, 3-6 = mittel, 7-8 = stark 
+Bewoelkungsgrad <- c("keine", "gering", "gering", "mittel", "mittel", "mittel", "mittel", "stark", "stark")
+Bewoelkung <- c(0:8)
+bewoelkungsgrad <- data.frame(cbind(Bewoelkungsgrad, Bewoelkung))
+
+#zu wetter datensatz hinzufügen
+pj_wetter <- merge(pj_wetter, bewoelkungsgrad, by = "Bewoelkung", all.x = TRUE)
+
+pj_wetter <- pj_wetter %>%
+  select(Datum, Windstaerke, Bewoelkungsgrad, Wettercode_neu, Temperatur)
+
+```
+
+
+
 ### Jetzt noch ein Dummy-Encoding durchführen
 ```{r}
-pj_wetter_dummy <- dummy_cols(pj_wetter, select_columns="Wettercode_neu", ignore_na = FALSE)
+pj_wetter_dummy <- dummy_cols(pj_wetter, select_columns = c("Wettercode_neu", "Bewoelkungsgrad"), ignore_na = FALSE)
 
-save(pj_wetter_dummy, "pj_wetter_dummy.Rda")
+# remove unnecessary columns
+pj_wetter_dummy <- pj_wetter_dummy %>%
+  mutate(Wettercode_neu = NULL,
+         Bewoelkungsgrad = NULL)
+
+
+
+save(pj_wetter_dummy, file = "pj_wetter_dummy.Rda")
 
 # Spalten umbenennen --> führt zu Fehler!
 # names(pj_wetter_dummy) <- c("Datum", "Bewoelkung", "Temperatur", "Windgeschw", "Wettercode", "Bewölkung_nicht_beobachtet", "Bewölkung_auflösend_abnehmend", "Gleichbleibende_Bewölkung", "Zunehmende_Bewölkung", "Dunst_Staub", "Trockenereignisse", "Ereignisse_letzte_Stunde", "Sandsturm_Schneefegen", "Nebel_Eisnebel", "Sprühregen", "Regen", "Schnee", "Schauer", "Gewitter", "Kein_Wert")
