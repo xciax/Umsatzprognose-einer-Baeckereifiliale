@@ -81,11 +81,11 @@ pj_schulferien <- schulferien
 # Tag des Monats
 
 # Erste Betrachtung der Daten
-hist(pj_wetter$Wettercode)
+# hist(pj_wetter$Wettercode) fehler weil $Wettercode nicht mehr vorhanden
 summary(pj_wetter)
 summary(pj_kiwo)
 summary(pj_umsatz)
-summary(pj_feiertage)
+# summary(pj_feiertage) fehler weil pj_feiertage nicht benutzt
 
 ```
 
@@ -144,6 +144,9 @@ allData_dummy$Wochentag <- NULL
 # alle restlichen NAim gesamten Datensatz löschen
 allData_dummy <- na.omit(allData_dummy)
 
+# berechne den Gesamt umsatz an einem Tag und packe diesen in eine neue Spalte
+allData_dummy$umsatzGes <- rowSums(allData_dummy[, c(2, 3, 4, 5, 6, 7)]) 
+
 # Datensatz Überprüfen
 summary(allData_dummy)
 
@@ -190,11 +193,11 @@ summary(mod4)
 
 bewoelkung_dummies <- c("Bewoelkungsgrad_keine", "Bewoelkungsgrad_gering", "Bewoelkungsgrad_mittel", "Bewoelkungsgrad_stark")
 wettercode_dummies <- c( "Wettercode_neu_Bewölkung_auflösend_abnehmend", "Wettercode_neu_Bewölkung_nicht_beobachtet", "Wettercode_neu_Dunst_Staub", "Wettercode_neu_Ereignisse_letzte_Stunde", "Wettercode_neu_Gewitter", "Wettercode_neu_Gleichbleibende_Bewölkung", "Wettercode_neu_Nebel_Eisnebel", "Wettercode_neu_Regen", "Wettercode_neu_Schauer", "Wettercode_neu_Schnee", "Wettercode_neu_Sprühregen",         "Wettercode_neu_Trockenereignisse", "Wettercode_neu_Zunehmende_Bewölkung", "Wettercode_neu_NA")
-wochentag_dummies <- c("Wochentag_Montag", "Wochentag_Dienstag", "Wochentag_Mittwoch", "Wochentag_Donnerstag", "Wochentag_Freitag", "Wochentag_Samstag", "Wochentag_Sonntag")
+wochentag_dummies <- c("Wochentag_Monday", "Wochentag_Tuesday", "Wochentag_Wednesday", "Wochentag_Thursday", "Wochentag_Friday", "Wochentag_Saturday", "Wochentag_Sunday")
 
-features <- c(bewoelkung_dummies, wettercode_dummies, wochentag_dummies, "Temperatur", "Windstaerke", "KielerWoche", "Schulferien")
+features <- c(bewoelkung_dummies, wettercode_dummies, wochentag_dummies, "Temperatur", "Windstaerke", "KielerWoche", "Schulferien","Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen", "Saisonbrot")
 # Selection of the label (the dependent variable)
-labels <- c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen", "Saisonbrot")
+labels <- c("umsatzGes")
 
 
 ###################################################
@@ -214,9 +217,11 @@ assignment <- sample(1:2, size = nrow(allData_dummy), prob = c(.8, .2), replace 
 # Create training, validation and test data for the features and the labels
 training_features <- allData_dummy[assignment == 1, features]    # subset house_pricing to training indices only
 training_labels <- allData_dummy[assignment == 1, labels]    # subset house_pricing to training indices only
+training_labels <- as.data.frame(training_labels)
 
 validation_features <- allData_dummy[assignment == 2, features]  # subset house_pricing to validation indices only
 validation_labels <- allData_dummy[assignment == 2, labels]  # subset house_pricing to validation indices only
+validation_labels <- as.data.frame(validation_labels)
 
 #are there any missing values?
 table(is.na(training_features))
@@ -247,8 +252,9 @@ from tensorflow.keras.optimizers import Adam
 model = Sequential([
   InputLayer(input_shape = (len(r.training_features.keys()), )),
   BatchNormalization(),
+  Dense(len(r.training_features.keys()), activation = 'relu'),
   Dense(10, activation = 'relu'),
-  Dense(4, activation = 'relu'),
+  Dense(6, activation = 'relu'),
   Dense(1)
 ])
 
@@ -262,10 +268,10 @@ model.summary()
 
 ```{python}
 # definition of the loss function and the optimazation function with hyperparameters
-model.compile(loss="mse", optimizer=Adam(learning_rate=0.001))
+model.compile(loss="mse", optimizer=Adam(learning_rate=0.002))
 
 #Schätzung des Modells
-history = model.fit(r.training_features, r.training_labels, epochs = 200,
+history = model.fit(r.training_features, r.training_labels, epochs = 1000,
                     validation_data = (r.validation_features, r.validation_labels), verbose = 0)
 
 
@@ -335,10 +341,9 @@ ggplot(data_test[1:100,]) +
 
 ```{r}
 # Vorhersage für einen einzelnen Fall
-cat(paste0("Vorhergesagter Preis:\t", round(validation_predictions[100])))
+cat(paste0("Vorhergesagter Umsatz:\t", round(validation_predictions[100])))
 
-cat(paste0("\nTatsächlicher Preis:\t", validation_labels[[1]][100]))
+cat(paste0("\nTatsächlicher Umsatz:\t", validation_labels[[1]][100]))
 
 ```
-
 
