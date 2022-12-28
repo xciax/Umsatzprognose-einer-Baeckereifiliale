@@ -166,13 +166,13 @@ load("projectData_dummy.Rda")
 ### Maximierung des adjustierten R2
 
 ```{r}
-mod1 <- lm(`1` ~ Temperatur + as.factor(Windstaerke), allData)
-mod2 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ as.factor(Bewoelkungsgrad), allData)
-mod3 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ as.factor(KielerWoche), allData)
-mod4 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ `2`, allData)
-mod4 <- lm(`2` ~ Temperatur + as.factor(Wochentag)+ `2`, allData)
+#mod1 <- lm(`1` ~ Temperatur + as.factor(Windstaerke), allData)
+#mod2 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ as.factor(Bewoelkungsgrad), allData)
+#mod3 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ as.factor(KielerWoche), allData)
+#mod4 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ `2`, allData)
+#mod4 <- lm(`2` ~ Temperatur + as.factor(Wochentag)+ `2`, allData)
 
-summary(mod4)
+#summary(mod4)
 ```
 
 
@@ -212,7 +212,7 @@ set.seed(1)
 # Assign each row number in the full dataset randomly to one of the two groups (i.e. either training or validation dataset)
 # Thereby the samples are randomly shuffled and 
 # the probability of being in one of the groups results in corresponding group sizes
-assignment <- sample(1:2, size = nrow(allData_dummy), prob = c(.8, .2), replace = TRUE)
+assignment <- sample(1:3, size = nrow(allData_dummy), prob = c(.7, .2, .1), replace = TRUE)
 
 # Create training, validation and test data for the features and the labels
 training_features <- allData_dummy[assignment == 1, features]    # subset house_pricing to training indices only
@@ -222,6 +222,11 @@ training_labels <- as.data.frame(training_labels)
 validation_features <- allData_dummy[assignment == 2, features]  # subset house_pricing to validation indices only
 validation_labels <- allData_dummy[assignment == 2, labels]  # subset house_pricing to validation indices only
 validation_labels <- as.data.frame(validation_labels)
+
+testing_features <- allData_dummy[assignment == 3, features]  # subset house_pricing to validation indices only
+testing_labels <- allData_dummy[assignment == 3, labels]  # subset house_pricing to validation indices only
+testing_labels <- as.data.frame(testing_labels)
+
 
 #are there any missing values?
 table(is.na(training_features))
@@ -253,8 +258,9 @@ model = Sequential([
   InputLayer(input_shape = (len(r.training_features.keys()), )),
   BatchNormalization(),
   Dense(len(r.training_features.keys()), activation = 'relu'),
-  Dense(10, activation = 'relu'),
-  Dense(6, activation = 'relu'),
+  Dense(len(r.training_features.keys())//2, activation = 'relu'),
+  Dense(len(r.training_features.keys())//4, activation = 'relu'),
+  Dense(len(r.training_features.keys())//8, activation = 'relu'),
   Dense(1)
 ])
 
@@ -268,7 +274,7 @@ model.summary()
 
 ```{python}
 # definition of the loss function and the optimazation function with hyperparameters
-model.compile(loss="mse", optimizer=Adam(learning_rate=0.002))
+model.compile(loss="mse", optimizer=Adam(learning_rate=0.001))
 
 #Schätzung des Modells
 history = model.fit(r.training_features, r.training_labels, epochs = 1000,
@@ -306,19 +312,23 @@ ggplot(data[-(1:10), ])+
 # Schätzung der (normierten) Preise für die Trainings- und Testdaten
 training_predictions <- py$model$predict(training_features)
 validation_predictions <- py$model$predict(validation_features)
+testing_predictions <- py$model$predict(testing_features)
 
 # Vergleich der Gütekriterien für die Traingings- und Testdaten
 cat(paste0("MAPE on the Training Data:\t", format(mape(training_labels[[1]], training_predictions)*100, digits=3, nsmall=2)))
 
 cat(paste0("\nMAPE on the Validation Data:\t", format(mape(validation_labels[[1]], validation_predictions)*100, digits=3, nsmall=2)))
 
+cat(paste0("\nMAPE on the Testing Data:\t", format(mape(testing_labels[[1]], testing_predictions)*100, digits=3, nsmall=2)))
+
 ```
 
 ```{r}
 ## Grafischer vergleich der vorhergesagten und der tatsächlichen Preise für die Trainings- und Testdaten
 # Zusammenstellung der Daten für die Plots
-data_train <- data.frame(prediction = training_predictions/1000, actual = training_labels[[1]]/1000)
-data_test <- data.frame(prediction = validation_predictions/1000, actual = validation_labels[[1]]/1000)
+data_train <- data.frame(prediction = training_predictions, actual = training_labels[[1]])
+data_test <- data.frame(prediction = validation_predictions, actual = validation_labels[[1]])
+data_test2 <- data.frame(prediction = testing_predictions, actual = testing_labels[[1]])
 
 # Plot der Ergebnisse der Trainingsdaten
 ggplot(data_train[1:100,]) +
@@ -327,23 +337,34 @@ ggplot(data_train[1:100,]) +
   scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
   labs(title="Predicted and Actual Values for the Training Data") +
   xlab("Case Number") +
-  ylab("Price in 1.000 USD") 
+  ylab("Price in EUR") 
 
 # Plot der Ergebnisse der Validierungsdaten
 ggplot(data_test[1:100,]) +
   geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
   geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
   scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
+  labs(title="Predicted and Actual Values for the Validation Data") +
+  xlab("Case Number") +
+  ylab("Price in EUR")
+
+# Plot der Ergebnisse der Testdaten
+ggplot(data_test2[1:100,]) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
+  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
   labs(title="Predicted and Actual Values for the Test Data") +
   xlab("Case Number") +
-  ylab("Price in 1.000 USD") 
+  ylab("Price in EUR") 
 ```
 
 ```{r}
 # Vorhersage für einen einzelnen Fall
 cat(paste0("Vorhergesagter Umsatz:\t", round(validation_predictions[100])))
 
-cat(paste0("\nTatsächlicher Umsatz:\t", validation_labels[[1]][100]))
+cat(paste0("\nTatsächlicher (Validation) Umsatz:\t", validation_labels[[1]][100]))
+
+cat(paste0("\nTatsächlicher (Test) Umsatz:\t", testing_labels[[1]][100]))
 
 ```
 
