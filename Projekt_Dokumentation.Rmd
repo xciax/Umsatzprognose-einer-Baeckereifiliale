@@ -277,7 +277,7 @@ model.summary()
 model.compile(loss="mse", optimizer=Adam(learning_rate=0.001))
 
 #Schätzung des Modells
-history = model.fit(r.training_features, r.training_labels, epochs = 1000,
+history = model.fit(r.training_features, r.training_labels, epochs = 150,
                     validation_data = (r.validation_features, r.validation_labels), verbose = 0)
 
 
@@ -331,7 +331,7 @@ data_test <- data.frame(prediction = validation_predictions, actual = validation
 data_test2 <- data.frame(prediction = testing_predictions, actual = testing_labels[[1]])
 
 # Plot der Ergebnisse der Trainingsdaten
-ggplot(data_train[1:100,]) +
+ggplot(data_train[,]) +
   geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
   geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
   scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
@@ -340,7 +340,7 @@ ggplot(data_train[1:100,]) +
   ylab("Price in EUR") 
 
 # Plot der Ergebnisse der Validierungsdaten
-ggplot(data_test[1:100,]) +
+ggplot(data_test[,]) +
   geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
   geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
   scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
@@ -349,7 +349,7 @@ ggplot(data_test[1:100,]) +
   ylab("Price in EUR")
 
 # Plot der Ergebnisse der Testdaten
-ggplot(data_test2[1:100,]) +
+ggplot(data_test2[,]) +
   geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
   geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
   scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
@@ -358,13 +358,13 @@ ggplot(data_test2[1:100,]) +
   ylab("Price in EUR") 
 ```
 
+### Ich vermute nochmal eine deutliche Verbesserung des MAPE (und damit des NN), wenn wir die Datensätzte oder das NN so verändern das nicht diese riesigen spitzten entstehen, ### welche den Gesamtumsatzt extrem überschätzen. 
+
 ```{r}
 # Vorhersage für einen einzelnen Fall
 cat(paste0("Vorhergesagter Umsatz:\t", round(validation_predictions[100])))
 
 cat(paste0("\nTatsächlicher (Validation) Umsatz:\t", validation_labels[[1]][100]))
-
-cat(paste0("\nTatsächlicher (Test) Umsatz:\t", testing_labels[[1]][100]))
 
 ```
 
