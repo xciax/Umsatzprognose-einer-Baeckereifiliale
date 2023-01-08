@@ -47,68 +47,68 @@ wcode_freq <- merge(pj_wettercodes, pj_wcode, by = "Code")
 ### Wettercodes zusammenfassen
 ```{r}
 # Zunächst eine neue Variable (Spalte) im df pj_wetter anlegen und mit dem bestehenden Code füllen
-pj_wetter$Wettercode_neu <- pj_wetter$Wettercode
+pj_wetter$WC <- pj_wetter$Wettercode
 
 # Jetzt einzelne Codes ersetzen
 
 #Bewölkung_nicht_beobachtet
 Bewölkung_nicht_beobachtet <- c(0)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Bewölkung_nicht_beobachtet] <- paste("Bewölkung_nicht_beobachtet")
+pj_wetter$WC[pj_wetter$Wettercode == Bewölkung_nicht_beobachtet] <- paste("Bewölkung_nicht_beobachtet")
 
 #Bewölkung_auflösend_abnehmend
 Bewölkung_auflösend_abnehmend <- c(1)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Bewölkung_auflösend_abnehmend] <- paste("Bewölkung_auflösend_abnehmend")
+pj_wetter$WC[pj_wetter$Wettercode == Bewölkung_auflösend_abnehmend] <- paste("Bewölkung_abnehmend")
 
 #Gleichbleibende_Bewölkung
 Gleichbleibende_Bewölkung <- c(2)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Gleichbleibende_Bewölkung] <- paste("Gleichbleibende_Bewölkung")
+pj_wetter$WC[pj_wetter$Wettercode == Gleichbleibende_Bewölkung] <- paste("Bewölkung_gleichbleibend")
 
 #Zunehmende_Bewölkung
 Zunehmende_Bewölkung <- c(3)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Zunehmende_Bewölkung] <- paste("Zunehmende_Bewölkung")
+pj_wetter$WC[pj_wetter$Wettercode == Zunehmende_Bewölkung] <- paste("Bewölkung_zunehmend")
 
 #Dunst_Staub
-Dunst_Staub <- c(4, 5, 6, 7, 8, 9)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Dunst_Staub] <- paste("Dunst_Staub")
+Dunst_Staub <- c(4:9)
+pj_wetter$WC[pj_wetter$Wettercode %in% Dunst_Staub] <- paste("Dunst_Staub")
 
 #Trockenereignisse
-Trockenereignisse <- c(10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Trockenereignisse] <- paste("Trockenereignisse")
+Trockenereignisse <- c(10:19)
+pj_wetter$WC[pj_wetter$Wettercode %in% Trockenereignisse] <- paste("Trockenereignisse")
 
 #Ereignisse_letzte_Stunde
-Ereignisse_letzte_Stunde <- c(20, 21, 22, 23, 24, 25, 26, 27, 28, 29)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Ereignisse_letzte_Stunde] <- paste("Ereignisse_letzte_Stunde")
+Ereignisse_letzte_Stunde <- c(20:29)
+pj_wetter$WC[pj_wetter$Wettercode %in% Ereignisse_letzte_Stunde] <- paste("Ereignisse_letzte_h")
 
 #Sandsturm_Schneefegen
-Sandsturm_Schneefegen <- c(30, 31, 32, 33, 34, 35, 36, 37, 38, 39)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Sandsturm_Schneefegen] <- paste("Sandsturm_Schneefegen")
+Sandsturm_Schneefegen <- c(30:39)
+pj_wetter$WC[pj_wetter$Wettercode %in% Sandsturm_Schneefegen] <- paste("Sandsturm_Schneefegen")
 
 #Nebel_Eisnebel
-Nebel_Eisnebel <- c(40, 41, 42, 43, 44, 45, 46, 47, 48, 49)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Nebel_Eisnebel] <- paste("Nebel_Eisnebel")
+Nebel_Eisnebel <- c(40:49)
+pj_wetter$WC[pj_wetter$Wettercode %in% Nebel_Eisnebel] <- paste("Nebel_Eisnebel")
 
 #Sprühregen
-Sprühregen <- c(50, 51, 52, 53, 54, 55, 56, 57, 58, 59)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Sprühregen] <- paste("Sprühregen")
+Sprühregen <- c(50:59)
+pj_wetter$WC[pj_wetter$Wettercode %in% Sprühregen] <- paste("Sprühregen")
 
 #Regen
-Regen <- c(60, 61, 62, 63, 64, 65, 66, 67, 68, 69)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Regen] <- paste("Regen")
+Regen <- c(60:69)
+pj_wetter$WC[pj_wetter$Wettercode %in% Regen] <- paste("Regen")
 
 #Schnee
-Schnee <- c(70, 71, 72, 73, 74, 75, 76, 77, 78, 79)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Schnee] <- paste("Schnee")
+Schnee <- c(70:79)
+pj_wetter$WC[pj_wetter$Wettercode %in% Schnee] <- paste("Schnee")
 
 #Schauer
-Schauer <- c(80, 81, 82, 83, 84, 85, 86, 87, 88, 89)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Schauer] <- paste("Schauer")
+Schauer <- c(80:89)
+pj_wetter$WC[pj_wetter$Wettercode %in% Schauer] <- paste("Schauer")
 
 #Gewitter                         
-Gewitter <- c(90, 91, 92, 93, 94, 95, 96, 97, 98, 99)
-pj_wetter$Wettercode_neu[pj_wetter$Wettercode %in% Gewitter] <- paste("Gewitter")
+Gewitter <- c(90:99)
+pj_wetter$WC[pj_wetter$Wettercode %in% Gewitter] <- paste("Gewitter")
 
 # Abschließende Statistik
-summary(pj_wetter)
+#summary(pj_wetter)
 ```
 
 
@@ -116,8 +116,8 @@ summary(pj_wetter)
 ```{r}
 #windgeschwindigkeit in m/s zusammenfassen in Windstärken 
 # dt mit Windstärken und Windgeschwindigkeit erstellen
-Windstaerke <- c(0, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 9, 9, 10, 10, 10, 10, 11, 11, 11, 11, 12)
-Windgeschwindigkeit <- c(0, 1, 2:3, 4:5, 6:7, 8:10, 11:13, 14:17, 18:20, 21:24, 25:28, 29:32, 33)
+Windstaerke <- c(0, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 9, 9, 10, 10, 10, 10, 11, 11, 11, 11, 12, 12, 12)
+Windgeschwindigkeit <- c(0, 1, 2:3, 4:5, 6:7, 8:10, 11:13, 14:17, 18:20, 21:24, 25:28, 29:32, 33:35)
 windstaerken <- data.frame(cbind(Windstaerke, Windgeschwindigkeit))
 
 # zu Wetterdaten hinzufügen
@@ -129,29 +129,28 @@ Bewoelkungsgrad <- c("keine", "gering", "gering", "mittel", "mittel", "mittel", 
 Bewoelkung <- c(0:8)
 bewoelkungsgrad <- data.frame(cbind(Bewoelkungsgrad, Bewoelkung))
 
-#zu wetter datensatz hinzufügen
+# zu wetter Datensatz hinzufügen
 pj_wetter <- merge(pj_wetter, bewoelkungsgrad, by = "Bewoelkung", all.x = TRUE)
 
 pj_wetter <- pj_wetter %>%
-  select(Datum, Windstaerke, Bewoelkungsgrad, Wettercode_neu, Temperatur)
+  select(Datum, Windstaerke, Bewoelkungsgrad, WC, Temperatur)
 
 ```
 
 
 
-### Jetzt noch ein Dummy-Encoding durchführen
+### Jetzt noch ein Dummy-Encoding des Wettercodes und des Bewölkungsgrades durchführen
 ```{r}
-pj_wetter_dummy <- dummy_cols(pj_wetter, select_columns = c("Wettercode_neu", "Bewoelkungsgrad"), ignore_na = FALSE)
+pj_wetter_dummy <- dummy_cols(pj_wetter, 
+                              select_columns = c("WC", "Bewoelkungsgrad"), 
+                              ignore_na = FALSE)
 
 # remove unnecessary columns
 pj_wetter_dummy <- pj_wetter_dummy %>%
-  mutate(Wettercode_neu = NULL,
+  mutate(WC = NULL,
          Bewoelkungsgrad = NULL)
 
-
-
+# fertigen Datensatz speichern
 save(pj_wetter_dummy, file = "pj_wetter_dummy.Rda")
 
-# Spalten umbenennen --> führt zu Fehler!
-# names(pj_wetter_dummy) <- c("Datum", "Bewoelkung", "Temperatur", "Windgeschw", "Wettercode", "Bewölkung_nicht_beobachtet", "Bewölkung_auflösend_abnehmend", "Gleichbleibende_Bewölkung", "Zunehmende_Bewölkung", "Dunst_Staub", "Trockenereignisse", "Ereignisse_letzte_Stunde", "Sandsturm_Schneefegen", "Nebel_Eisnebel", "Sprühregen", "Regen", "Schnee", "Schauer", "Gewitter", "Kein_Wert")
 ```
