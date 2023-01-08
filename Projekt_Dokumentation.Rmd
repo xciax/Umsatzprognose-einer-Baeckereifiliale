@@ -1,31 +1,26 @@
 ---
 title: "R Notebook"
 output: html_notebook
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
+
 # Projekt Dokumentation
 
-Aufgabe: Vorhersage der Umsätze vom 9.6.2019 bis 30.07.2019 
+Aufgabe: Vorhersage der Umsätze vom 9.6.2019 bis 30.07.2019
 
-###Infos zu den gegebenen Daten
+### Infos zu den gegebenen Daten
 
-Warengruppen: 
-* 1 = Brot
-* 2 = Brötchen 
-* 3 = Croissant
-* 4 = Konditorei
-* 5 = Kuchen
-* 6 = Saisonbrot
+Warengruppen: \* 1 = Brot \* 2 = Brötchen \* 3 = Croissant \* 4 =
+Konditorei \* 5 = Kuchen \* 6 = Saisonbrot
 
-Wetterdaten:
-* Mittlerer Bewölkungsgrad am Tag (0 = min, 8 = max)
-* MIttlere Temperatur in C
-* Mittlere Windgeschwindigkeit in m/s
-* Wettercode (http://www.seewetter-kiel.de/seewetter/daten_symbole.htm)
-* und in der Datei wettercodes.Rda
+Wetterdaten: \* Mittlerer Bewölkungsgrad am Tag (0 = min, 8 = max) \*
+MIttlere Temperatur in C \* Mittlere Windgeschwindigkeit in m/s \*
+Wettercode (<http://www.seewetter-kiel.de/seewetter/daten_symbole.htm>)
+\* und in der Datei wettercodes.Rda
 
-## Vorbereitung ##
-
-##### benötigte Libraries laden #####
+### Vorbereitung & benötigte Libraries laden
 
 ```{r}
 
@@ -40,17 +35,14 @@ for (pkg in pkgs) {
     library(pkg, character.only = TRUE)
   }
 }
-
 ```
 
+### Vorbereitete Datensätze laden
 
-##### Vorbereitete Datensätze laden #####
-
-* Wetterdaten wurden in "Datenaufbereitung_Wetter.Rmd" vorbereitet
-* Feiertagedaten wurden in "Datenaufbereitung_Feiertage.R" vorbereitet
-* Schulferien wurden in "Datenaufbereitung_Schulferien.R" vorbereitet
-* Umsatzdaten wurden in "Datenaufbereitung_Umsatz.R" vorbereitet
-...
+-   Wetterdaten wurden in "Datenaufbereitung_Wetter.Rmd" vorbereitet
+-   Feiertagedaten wurden in "Datenaufbereitung_Feiertage.R" vorbereitet
+-   Schulferien wurden in "Datenaufbereitung_Schulferien.R" vorbereitet
+-   Umsatzdaten wurden in "Datenaufbereitung_Umsatz.R" vorbereitet
 
 ```{r}
 # Lade Daten
@@ -61,26 +53,19 @@ load("kiwoDT.Rda")
 pj_kiwo <- kiwoDT
   
 load("pj_umsatz.Rda")
- 
-
-# load("feiertageSH.Rda")
-# pj_feiertage <- feiertageSH
 
 load("schulferien.Rda")
 pj_schulferien <- schulferien
 
 # Erste Betrachtung der Daten
-summary(pj_wetter)
-summary(pj_kiwo)
-summary(pj_umsatz)
-
+#summary(pj_wetter)
+#summary(pj_kiwo)
+#summary(pj_umsatz)
 ```
 
-
-## Zusammenführung der vorbereiteten Datensätze ##
+### allData_dummy
 
 ```{r}
-
 # Merge erstellt automatisch die Schnittmenge
 # Der Zusatz all.x = TRUE sorgt dafür, dass keine Zeilen (basierend auf Datensatz x) weggelöscht werden
 # Wetterdaten nach Datum hinzufügen
@@ -92,17 +77,9 @@ pj_umsatz_wetter_ferien <- merge(pj_umsatz_wetter, pj_schulferien, by="Datum", a
 # KiWo nach Datum hinzufügen
 allData <- merge(pj_umsatz_wetter_ferien, pj_kiwo, by="Datum", all.x = TRUE)
 
-##### 
-# weitere Datensätze hinzufügen 
-# --> Feiertage sind komplett nicht mit drin, die Filiale scheint da also geschlossen gewesen zu sein
-# allData <- merge(pj_um_we_ki, pj_feiertage, by="Datum", all.x = TRUE)
-
-#####
-
 # auf fehlende Werte überprüfen:
 allData_na <- allData %>%
   aggr(combined=TRUE, numbers=TRUE)
-
 
 # Imputation Temperatur und Windstaerke
 # Aktuell: "Datenspende" vom Wert vom Vortag
@@ -117,136 +94,115 @@ ggplot(allData) +
 ggplot(allData) +
   geom_point(aes(x = Datum, y = Windstaerke, color = Windstaerke_imp))
 
-
 # NA Wettercodes zu 0, da Spalte WC_NA angibt, wo Wettercodes gefehlt haben
 # Spalten 12 -24
 
 # das gleiche gilt bei der Bewölkung
 # Spalten 26 - 29
 
-# weitere NA mit 0 füllen, dort wo es Sinn ergibt -> Kiwo, Schulferien       
+# weitere NA mit 0 füllen, dort wo es Sinn ergibt  
 
 allData <- allData %>%
-    mutate_at(vars(c(12:24, 26:29), KielerWoche, Schulferien), ~replace(., is.na(.), 0))
-
+    mutate_at(c(12:34), ~replace(., is.na(.), 0))
 
 # dummy coding der Wochentage
 allData_dummy <- dummy_cols(allData, select_columns = "Wochentag")
 
-# Wochentag Spalte raus ?
-# allData_dummy$Wochentag <- NULL
-
-
-# Gesamtumsatz je Tag in neuer Spalte berechnen 
-allData_dummy$umsatzGes <- rowSums(allData_dummy[, c(2, 3, 4, 5, 6, 7)]) 
-
-# Datensatz Überprüfen
 summary(allData_dummy)
-
 save(allData_dummy, file="projectData_dummy.Rda")
-
-#------------------------------------------------------------------------------#
-# AB HIER STARTEN MIT:
-load("projectData_dummy.Rda")
-
 ```
 
+### Testdatensatz
 
-
-## lineare Regression ##
 ```{r}
-## lineare Regression ##
+# Erstelle einen leeren Dataframe mit einer Spalte für das Datum
+testDatenSatz <- data.frame(Datum = character())
 
-### Maximierung des adjustierten R2
+# Erstelle eine Sequenz von Daten im angegebenen Zeitraum
+datum_sequenz <- seq(from = as.Date("2019-06-09"),
+                     to = as.Date("2019-07-30"),
+                     by = "days")
 
+# Füge die Daten der Sequenz dem Dataframe hinzu
+testDatenSatz <- rbind(testDatenSatz, data.frame(Datum = datum_sequenz))
+testDatenSatz$Wochentag <- weekdays(testDatenSatz$Datum)
+testDatenSatz <- merge(testDatenSatz, pj_wetter, by="Datum", all.x = TRUE)
+testDatenSatz <- merge(testDatenSatz, pj_schulferien, by="Datum", all.x = TRUE)
+testDatenSatz <- merge(testDatenSatz, pj_kiwo, by="Datum", all.x = TRUE)
+### Testdatensatz ###
 
-#mod1 <- lm(`1` ~ Temperatur + as.factor(Windstaerke), allData)
-#mod2 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ as.factor(Bewoelkungsgrad), allData)
-#mod3 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ as.factor(KielerWoche), allData)
-#mod4 <- lm(`1` ~ Temperatur + as.factor(Windstaerke)+ `2`, allData)
-#mod4 <- lm(`2` ~ Temperatur + as.factor(Wochentag)+ `2`, allData)
+testDatenSatz <- testDatenSatz %>% 
+  hotdeck(variable = c("Temperatur", "Windstaerke"),
+          ord_var = "Datum")
 
-#summary(mod4)
+#imputierte Werte von testDatenSatz graphisch überprüfen:
+ggplot(testDatenSatz) +
+  geom_point(aes(x = Datum, y = Temperatur, color = Temperatur_imp))
+ggplot(testDatenSatz) +
+  geom_point(aes(x = Datum, y = Windstaerke, color = Windstaerke_imp))
+
+testDatenSatz <- testDatenSatz %>%
+    mutate_at(c(4:26), ~replace(., is.na(.), 0))
+
+# dummy coding der Wochentage
+testDatenSatz <- dummy_cols(testDatenSatz, select_columns = "Wochentag")
+
+summary(testDatenSatz)
+save(testDatenSatz, file="Datenaufbereitung_Testdaten.Rda")
 ```
 
-
-
-## Neuronales Netz ##
-
-### Datenaufbereitung: 
-1. Features und Label definieren
-2. Datensatz teilen in Trainingsdaten und Validierungsdaten
-
-!! AB HIER MÜSSEN UNSERE DATEN EINGESETZT WERDEN !!
+### Features & Labels
 
 ```{r}
-###################################################
-### Selection of the Feature Variables and the Label Variable ####
+features <- c("Windstaerke",                   "Temperatur",                    "WC_Bewölkung_abnehmend",
+              "WC_Bewölkung_gleichbleibend",   "WC_Bewölkung_nicht_beobachtet", "WC_Bewölkung_zunehmend",
+              "WC_Dunst_Staub",                "WC_Ereignisse_letzte_h",        "WC_Gewitter",
+              "WC_Nebel_Eisnebel",             "WC_Regen",                      "WC_Schauer",
+              "WC_Schnee",                     "WC_Sprühregen",                 "WC_Trockenereignisse",
+              "WC_NA",                         "Bewoelkungsgrad_gering",        "Bewoelkungsgrad_keine",
+              "Bewoelkungsgrad_mittel",        "Bewoelkungsgrad_stark",         "Bewoelkungsgrad_NA",
+              "Schulferien",                   "KielerWoche",                   "Wochentag_Tuesday",          
+              "Wochentag_Thursday",
+              "Wochentag_Friday",              "Wochentag_Wednesday",           "Wochentag_Monday",
+              "Wochentag_Saturday",            "Wochentag_Sunday")
 
-# Selection of the features (the independent variables used to predict the dependent)
-#features <- c('sqft_lot', 'waterfront', 'grade', 'bathrooms', view_dummies, condition_dummies)
-
-bewoelkung_dummies <- c("Bewoelkungsgrad_keine", "Bewoelkungsgrad_gering", "Bewoelkungsgrad_mittel", "Bewoelkungsgrad_stark", "Bewoelkungsgrad_NA")
-wettercode_dummies <- c( "WC_Bewölkung_zunehmend", "WC_Bewölkung_abnehmend", "WC_Bewölkung_gleichbleibend","WC_Bewölkung_nicht_beobachtet", "WC_Dunst_Staub", "WC_Ereignisse_letzte_h", "Wettercode_neu_Gewitter",  "WC_Nebel_Eisnebel", "WC_Regen", "WC_Schauer", "WC_Schnee", "WC_Sprühregen", "WC_Trockenereignisse",  "WC_NA")
-wochentag_dummies <- c("Wochentag_Montag", "Wochentag_Dienstag", "Wochentag_Mittwoch", "Wochentag_Donnerstag", "Wochentag_Freitag", "Wochentag_Samstag", "Wochentag_Sonntag")
-
-features <- c(bewoelkung_dummies, wettercode_dummies, wochentag_dummies, "Temperatur", "Windstaerke", "KielerWoche", "Schulferien")
-# Selection of the label (the dependent variable)
 labels <- c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen", "Saisonbrot")
+```
 
-###################################################
-### Selection of Training, Validation and Test Data ####
+### Selection of Training, Validation and Test Data
 
-# Look at the data
-str(allData_dummy)
-
+```{r}
 # Setting the random counter to a fixed value, so the random initialization stays the same (the random split is always the same)
-
 set.seed(1)
 
-# Assign each row number in the full dataset randomly to one of the two groups (i.e. either training or validation dataset)
-# Thereby the samples are randomly shuffled and 
-# the probability of being in one of the groups results in corresponding group sizes
 assignment <- sample(1:2, size = nrow(allData_dummy), prob = c(.8, .2), replace = TRUE)
 
 # Create training, validation and test data for the features and the labels
-training_features <- allData_dummy[assignment == 1, features]    # subset house_pricing to training indices only
-training_labels <- allData_dummy[assignment == 1, labels]    # subset house_pricing to training indices only
+training_features <- allData_dummy[assignment == 1, features]    
+training_labels <- allData_dummy[assignment == 1, labels]    
 training_labels <- as.data.frame(training_labels)
 
-validation_features <- allData_dummy[assignment == 2, features]  # subset house_pricing to validation indices only
-validation_labels <- allData_dummy[assignment == 2, labels]  # subset house_pricing to validation indices only
+validation_features <- allData_dummy[assignment == 2, features]  
+validation_labels <- allData_dummy[assignment == 2, labels]  
 validation_labels <- as.data.frame(validation_labels)
 
-# Testdatensatz laden
-# vorbereitet in "Datenaufbereitung_Testdaten.R" -> kommt noch
-
-# load..
-
-# hier entsprechend noch anpassen:
-testing_features <- allData_dummy[assignment == 3, features]  # subset house_pricing to validation indices only
-testing_labels <- allData_dummy[assignment == 3, labels]  # subset house_pricing to validation indices only
-testing_labels <- as.data.frame(testing_labels)
-
+testing_features <- testDatenSatz %>% select(features)
 
 #are there any missing values?
 table(is.na(training_features))
-
-#neuronal networks can't handle missing values --> delete!
-
+table(is.na(validation_features))
+table(is.na(testing_features))
+#summary(allData_dummy)
 ```
-
 
 ### Modell aufstellen in Python
 
 ```{python}
-# Import needed Python libraries and functions
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import InputLayer, Dense, BatchNormalization, Dropout
 from tensorflow.keras.optimizers import Adam
-
 
 # The argument "input_shape" for the definition of the input layer must include 
 # the number of input variables (features) used for the model. 
@@ -259,17 +215,16 @@ model = Sequential([
   InputLayer(input_shape = (len(r.training_features.keys()), )),
   BatchNormalization(),
   Dense(len(r.training_features.keys()), activation = 'relu'),
-  Dense(len(r.training_features.keys())//2, activation = 'relu'),
-  Dense(len(r.training_features.keys())//4, activation = 'relu'),
-  Dense(len(r.training_features.keys())//8, activation = 'relu'),
-  Dense(1)
+  Dense(len(r.training_features.keys()), activation = 'relu'),
+  Dense(len(r.training_features.keys()), activation = 'relu'),
+  Dense(len(r.training_features.keys()), activation = 'relu'),
+  Dense(len(r.training_features.keys()), activation = 'relu'),
+  Dense(6)
 ])
 
 # Ausgabe einer ZUsammenfassung zur Form des MOdells, das geschätzt wird (nicht notwendig)
-model.summary()
-
+#model.summary()
 ```
-
 
 ### Schätzung de neuronalen Netzes
 
@@ -278,17 +233,13 @@ model.summary()
 model.compile(loss="mse", optimizer=Adam(learning_rate=0.001))
 
 #Schätzung des Modells
-history = model.fit(r.training = _features, r.training_labels, epochs = 150,
+history = model.fit(r.training_features, r.training_labels, epochs = 500,
                     validation_data = (r.validation_features, r.validation_labels), verbose = 0)
-
-
-#save model
+                    
 model.save("python_model.h5")
-
 ```
 
-
-### graphische Ausgabe der Modelloptimierung 
+### graphische Ausgabe der Modelloptimierung
 
 ```{r}
 # Graphische Ausgabe der Modelloptimierung
@@ -304,11 +255,10 @@ ggplot(data[-(1:10), ])+
   labs(title = "Loss Function Values During Optimazation") +
   xlab("Iteration Number") +
   ylab("Loss")
-
-
 ```
 
 ### Auswertung der Schätzergebnisse
+
 ```{r}
 # Schätzung der (normierten) Preise für die Trainings- und Testdaten
 training_predictions <- py$model$predict(training_features)
@@ -316,23 +266,22 @@ validation_predictions <- py$model$predict(validation_features)
 testing_predictions <- py$model$predict(testing_features)
 
 # Vergleich der Gütekriterien für die Traingings- und Testdaten
-cat(paste0("MAPE on the Training Data:\t", format(mape(training_labels[[1]], training_predictions)*100, digits=3, nsmall=2)))
+cat(paste0("MAPE on the Training Data:\t", format(mape(training_labels[[1]], training_predictions[[1]])*100, digits=3, nsmall=2)))
 
-cat(paste0("\nMAPE on the Validation Data:\t", format(mape(validation_labels[[1]], validation_predictions)*100, digits=3, nsmall=2)))
-
-cat(paste0("\nMAPE on the Testing Data:\t", format(mape(testing_labels[[1]], testing_predictions)*100, digits=3, nsmall=2)))
-
+cat(paste0("\nMAPE on the Validation Data:\t", format(mape(validation_labels[[1]], validation_predictions[[1]])*100, digits=3, nsmall=2)))
 ```
 
+### Grafischer vergleich der vorhergesagten & tatsächlicher Preise für die Trainings- und Validierungsdaten
+
 ```{r}
-## Grafischer vergleich der vorhergesagten und der tatsächlichen Preise für die Trainings- und Testdaten
-# Zusammenstellung der Daten für die Plots
-data_train <- data.frame(prediction = training_predictions, actual = training_labels[[1]])
-data_test <- data.frame(prediction = validation_predictions, actual = validation_labels[[1]])
-data_test2 <- data.frame(prediction = testing_predictions, actual = testing_labels[[1]])
+data_train <- data.frame(prediction = training_predictions[,1], actual = training_labels[,1])
+data_test <- data.frame(prediction = validation_predictions[,1], actual = validation_labels[,1])
+data_test2 <- data.frame(prediction = testing_predictions[,1])
+
+view(data_test2)
 
 # Plot der Ergebnisse der Trainingsdaten
-ggplot(data_train[,]) +
+ggplot(data_train[]) +
   geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
   geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
   scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
@@ -350,22 +299,17 @@ ggplot(data_test[,]) +
   ylab("Price in EUR")
 
 # Plot der Ergebnisse der Testdaten
-ggplot(data_test2[,]) +
+ggplot(data_test2) +
   geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Test Data") +
+  labs(title="Prediction for the Test Data") +
   xlab("Case Number") +
   ylab("Price in EUR") 
 ```
 
-### Ich vermute nochmal eine deutliche Verbesserung des MAPE (und damit des NN), wenn wir die Datensätzte oder das NN so verändern das nicht diese riesigen spitzten entstehen, ### welche den Gesamtumsatzt extrem überschätzen. 
+### Vorhersage für einen einzelnen Fall
 
 ```{r}
-# Vorhersage für einen einzelnen Fall
 cat(paste0("Vorhergesagter Umsatz:\t", round(validation_predictions[100])))
 
 cat(paste0("\nTatsächlicher (Validation) Umsatz:\t", validation_labels[[1]][100]))
-
 ```
-
