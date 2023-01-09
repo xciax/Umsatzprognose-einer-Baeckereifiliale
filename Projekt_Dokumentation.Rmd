@@ -15,6 +15,8 @@ Aufgabe: Vorhersage der Umsätze vom 9.6.2019 bis 30.07.2019
 Warengruppen: \* 1 = Brot \* 2 = Brötchen \* 3 = Croissant \* 4 =
 Konditorei \* 5 = Kuchen \* 6 = Saisonbrot
 
+### Saisonbrot muss nicht vorhergesagt werden! Siehe 'predition_template.csv'.
+
 Wetterdaten: \* Mittlerer Bewölkungsgrad am Tag (0 = min, 8 = max) \*
 MIttlere Temperatur in C \* Mittlere Windgeschwindigkeit in m/s \*
 Wettercode (<http://www.seewetter-kiel.de/seewetter/daten_symbole.htm>)
@@ -166,7 +168,7 @@ features <- c("Windstaerke",                   "Temperatur",                    
               "Wochentag_Friday",              "Wochentag_Wednesday",           "Wochentag_Monday",
               "Wochentag_Saturday",            "Wochentag_Sunday")
 
-labels <- c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen", "Saisonbrot")
+labels <- c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen")
 ```
 
 ### Selection of Training, Validation and Test Data
@@ -219,7 +221,7 @@ model = Sequential([
   Dense(len(r.training_features.keys()), activation = 'relu'),
   Dense(len(r.training_features.keys()), activation = 'relu'),
   Dense(len(r.training_features.keys()), activation = 'relu'),
-  Dense(6)
+  Dense(5)
 ])
 
 # Ausgabe einer ZUsammenfassung zur Form des MOdells, das geschätzt wird (nicht notwendig)
@@ -233,7 +235,7 @@ model = Sequential([
 model.compile(loss="mse", optimizer=Adam(learning_rate=0.001))
 
 #Schätzung des Modells
-history = model.fit(r.training_features, r.training_labels, epochs = 500,
+history = model.fit(r.training_features, r.training_labels, epochs = 100,
                     validation_data = (r.validation_features, r.validation_labels), verbose = 0)
                     
 model.save("python_model.h5")
@@ -266,42 +268,192 @@ validation_predictions <- py$model$predict(validation_features)
 testing_predictions <- py$model$predict(testing_features)
 
 # Vergleich der Gütekriterien für die Traingings- und Testdaten
-cat(paste0("MAPE on the Training Data:\t", format(mape(training_labels[[1]], training_predictions[[1]])*100, digits=3, nsmall=2)))
+a <- format(mape(training_labels[,1], training_predictions[,1])*100, digits=3, nsmall=2)
+b <- format(mape(training_labels[,2], training_predictions[,2])*100, digits=3, nsmall=2)
+c <- format(mape(training_labels[,3], training_predictions[,3])*100, digits=3, nsmall=2)
+d <- format(mape(training_labels[,4], training_predictions[,4])*100, digits=3, nsmall=2)
+e <- format(mape(training_labels[,5], training_predictions[,5])*100, digits=3, nsmall=2)
 
-cat(paste0("\nMAPE on the Validation Data:\t", format(mape(validation_labels[[1]], validation_predictions[[1]])*100, digits=3, nsmall=2)))
+cat(paste0("\nMAPE on the Training Data1:\t", a))
+cat(paste0("\nMAPE on the Training Data2:\t", b))
+cat(paste0("\nMAPE on the Training Data3:\t", c))
+cat(paste0("\nMAPE on the Training Data4:\t", d))
+cat(paste0("\nMAPE on the Training Data5:\t", e, "\n"))
+
+g <- format(mape(validation_labels[,1], validation_predictions[,1])*100, digits=3, nsmall=2)
+h <- format(mape(validation_labels[,2], validation_predictions[,2])*100, digits=3, nsmall=2)
+i <- format(mape(validation_labels[,3], validation_predictions[,3])*100, digits=3, nsmall=2)
+j <- format(mape(validation_labels[,4], validation_predictions[,4])*100, digits=3, nsmall=2)
+k <- format(mape(validation_labels[,5], validation_predictions[,5])*100, digits=3, nsmall=2)
+  
+cat(paste0("\nMAPE on the Validation Data1:\t", g))
+cat(paste0("\nMAPE on the Validation Data2:\t", h))
+cat(paste0("\nMAPE on the Validation Data3:\t", i))
+cat(paste0("\nMAPE on the Validation Data4:\t", j))
+cat(paste0("\nMAPE on the Validation Data5:\t", k, "\n"))
+
+# Mean of Training and Validation Data MAPE
+meanT <- c(as.double(a), as.double(b), as.double(c), as.double(d), as.double(e)) 
+meanV <- c(as.double(g), as.double(h), as.double(i), as.double(j), as.double(k)) 
+
+cat(paste0("\nMean Training MAPE: ", mean(meanT), "\n"))
+cat(paste0("Mean Validation MAPE: ", mean(meanV), "\n"))
 ```
 
 ### Grafischer vergleich der vorhergesagten & tatsächlicher Preise für die Trainings- und Validierungsdaten
 
 ```{r}
 data_train <- data.frame(prediction = training_predictions[,1], actual = training_labels[,1])
-data_test <- data.frame(prediction = validation_predictions[,1], actual = validation_labels[,1])
-data_test2 <- data.frame(prediction = testing_predictions[,1])
-
-view(data_test2)
+data_val <- data.frame(prediction = validation_predictions[,1], actual = validation_labels[,1])
+data_test <- data.frame(prediction = testing_predictions[,1])
 
 # Plot der Ergebnisse der Trainingsdaten
 ggplot(data_train[]) +
   geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
   geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
   scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Training Data") +
+  labs(title="Predicted and Actual Values for the Training Data 1") +
   xlab("Case Number") +
   ylab("Price in EUR") 
 
 # Plot der Ergebnisse der Validierungsdaten
-ggplot(data_test[,]) +
+ggplot(data_val[,]) +
   geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
   geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
   scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Validation Data") +
+  labs(title="Predicted and Actual Values for the Validation Data 1") +
+  xlab("Case Number") +
+  ylab("Price in EUR")
+
+# Plot der Ergebnisse der Testdaten
+ggplot(data_test) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  labs(title="Prediction for the Test Data 1") +
+  xlab("Case Number") +
+  ylab("Price in EUR") 
+
+#------------------------- 2 -------------------------#
+
+data_train2 <- data.frame(prediction = training_predictions[,2], actual = training_labels[,2])
+data_val2 <- data.frame(prediction = validation_predictions[,2], actual = validation_labels[,2])
+data_test2 <- data.frame(prediction = testing_predictions[,2])
+
+# Plot der Ergebnisse der Trainingsdaten
+ggplot(data_train2) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
+  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
+  labs(title="Predicted and Actual Values for the Training Data 2") +
+  xlab("Case Number") +
+  ylab("Price in EUR") 
+
+# Plot der Ergebnisse der Validierungsdaten
+ggplot(data_val2) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
+  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
+  labs(title="Predicted and Actual Values for the Validation Data 2") +
   xlab("Case Number") +
   ylab("Price in EUR")
 
 # Plot der Ergebnisse der Testdaten
 ggplot(data_test2) +
   geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  labs(title="Prediction for the Test Data") +
+  labs(title="Prediction for the Test Data 2") +
+  xlab("Case Number") +
+  ylab("Price in EUR") 
+
+#------------------------- 3 -------------------------#
+
+data_train3 <- data.frame(prediction = training_predictions[,3], actual = training_labels[,3])
+data_val3 <- data.frame(prediction = validation_predictions[,3], actual = validation_labels[,3])
+data_test3 <- data.frame(prediction = testing_predictions[,3])
+
+# Plot der Ergebnisse der Trainingsdaten
+ggplot(data_train3) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
+  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
+  labs(title="Predicted and Actual Values for the Training Data 3") +
+  xlab("Case Number") +
+  ylab("Price in EUR") 
+
+# Plot der Ergebnisse der Validierungsdaten
+ggplot(data_val3) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
+  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
+  labs(title="Predicted and Actual Values for the Validation Data 3") +
+  xlab("Case Number") +
+  ylab("Price in EUR")
+
+# Plot der Ergebnisse der Testdaten
+ggplot(data_test3) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  labs(title="Prediction for the Test Data 3") +
+  xlab("Case Number") +
+  ylab("Price in EUR") 
+
+
+#------------------------- 4 -------------------------#
+
+data_train4 <- data.frame(prediction = training_predictions[,4], actual = training_labels[,4])
+data_val4 <- data.frame(prediction = validation_predictions[,4], actual = validation_labels[,4])
+data_test4 <- data.frame(prediction = testing_predictions[,4])
+
+# Plot der Ergebnisse der Trainingsdaten
+ggplot(data_train4) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
+  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
+  labs(title="Predicted and Actual Values for the Training Data 4") +
+  xlab("Case Number") +
+  ylab("Price in EUR") 
+
+# Plot der Ergebnisse der Validierungsdaten
+ggplot(data_val4) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
+  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
+  labs(title="Predicted and Actual Values for the Validation Data 4") +
+  xlab("Case Number") +
+  ylab("Price in EUR")
+
+# Plot der Ergebnisse der Testdaten
+ggplot(data_test4) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  labs(title="Prediction for the Test Data 4") +
+  xlab("Case Number") +
+  ylab("Price in EUR") 
+
+#------------------------- 5 -------------------------#
+
+data_train5 <- data.frame(prediction = training_predictions[,5], actual = training_labels[,5])
+data_val5 <- data.frame(prediction = validation_predictions[,5], actual = validation_labels[,5])
+data_test5 <- data.frame(prediction = testing_predictions[,5])
+
+# Plot der Ergebnisse der Trainingsdaten
+ggplot(data_train5) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
+  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
+  labs(title="Predicted and Actual Values for the Training Data 5") +
+  xlab("Case Number") +
+  ylab("Price in EUR") 
+
+# Plot der Ergebnisse der Validierungsdaten
+ggplot(data_val5) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
+  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
+  labs(title="Predicted and Actual Values for the Validation Data 5") +
+  xlab("Case Number") +
+  ylab("Price in EUR")
+
+# Plot der Ergebnisse der Testdaten
+ggplot(data_test5) +
+  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
+  labs(title="Prediction for the Test Data 5") +
   xlab("Case Number") +
   ylab("Price in EUR") 
 ```
