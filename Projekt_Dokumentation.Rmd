@@ -245,10 +245,10 @@ model = Sequential([
 
 ```{python}
 # definition of the loss function and the optimazation function with hyperparameters
-model.compile(loss="mse", optimizer=Adam(learning_rate=0.001))
+model.compile(loss="mape", optimizer=Adam(learning_rate=0.001))
 
 #Schätzung des Modells
-history = model.fit(r.training_features, r.training_labels, epochs = 300,
+history = model.fit(r.training_features, r.training_labels, epochs = 200,
                     validation_data = (r.validation_features, r.validation_labels), verbose = 0)
                     
 model.save("python_model.h5")
