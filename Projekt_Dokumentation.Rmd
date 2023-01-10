@@ -25,7 +25,7 @@ Wettercode (<http://www.seewetter-kiel.de/seewetter/daten_symbole.htm>)
 ### Vorbereitung & benötigte Libraries laden
 
 ```{r}
-
+remove(list = ls())
 # Create list with needed libraries
 pkgs <- c("lubridate", "stringr","tidyverse", "readr", 
           "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM")
@@ -110,6 +110,12 @@ allData <- allData %>%
 # dummy coding der Wochentage
 allData_dummy <- dummy_cols(allData, select_columns = "Wochentag")
 
+allData_dummy$year <- year(allData_dummy$Datum)
+allData_dummy$month <- month(allData_dummy$Datum)
+allData_dummy$day <- day(allData_dummy$Datum)
+
+allData_dummy$Datum <- NULL
+
 summary(allData_dummy)
 save(allData_dummy, file="projectData_dummy.Rda")
 ```
@@ -149,6 +155,12 @@ testDatenSatz <- testDatenSatz %>%
 # dummy coding der Wochentage
 testDatenSatz <- dummy_cols(testDatenSatz, select_columns = "Wochentag")
 
+testDatenSatz$year <- year(testDatenSatz$Datum)
+testDatenSatz$month <- month(testDatenSatz$Datum)
+testDatenSatz$day <- day(testDatenSatz$Datum)
+
+testDatenSatz$Datum <- NULL
+
 summary(testDatenSatz)
 save(testDatenSatz, file="Datenaufbereitung_Testdaten.Rda")
 ```
@@ -156,7 +168,8 @@ save(testDatenSatz, file="Datenaufbereitung_Testdaten.Rda")
 ### Features & Labels
 
 ```{r}
-features <- c("Windstaerke",                   "Temperatur",                    "WC_Bewölkung_abnehmend",
+features <- c("day",                           "month",                         "year",
+              "Windstaerke",                   "Temperatur",                    "WC_Bewölkung_abnehmend",
               "WC_Bewölkung_gleichbleibend",   "WC_Bewölkung_nicht_beobachtet", "WC_Bewölkung_zunehmend",
               "WC_Dunst_Staub",                "WC_Ereignisse_letzte_h",        "WC_Gewitter",
               "WC_Nebel_Eisnebel",             "WC_Regen",                      "WC_Schauer",
@@ -217,9 +230,9 @@ model = Sequential([
   InputLayer(input_shape = (len(r.training_features.keys()), )),
   BatchNormalization(),
   Dense(len(r.training_features.keys()), activation = 'relu'),
+  Dropout(0.2),
   Dense(len(r.training_features.keys()), activation = 'relu'),
-  Dense(len(r.training_features.keys()), activation = 'relu'),
-  Dense(len(r.training_features.keys()), activation = 'relu'),
+  Dropout(0.2),
   Dense(len(r.training_features.keys()), activation = 'relu'),
   Dense(5)
 ])
@@ -235,7 +248,7 @@ model = Sequential([
 model.compile(loss="mse", optimizer=Adam(learning_rate=0.001))
 
 #Schätzung des Modells
-history = model.fit(r.training_features, r.training_labels, epochs = 100,
+history = model.fit(r.training_features, r.training_labels, epochs = 300,
                     validation_data = (r.validation_features, r.validation_labels), verbose = 0)
                     
 model.save("python_model.h5")
@@ -456,12 +469,4 @@ ggplot(data_test5) +
   labs(title="Prediction for the Test Data 5") +
   xlab("Case Number") +
   ylab("Price in EUR") 
-```
-
-### Vorhersage für einen einzelnen Fall
-
-```{r}
-cat(paste0("Vorhergesagter Umsatz:\t", round(validation_predictions[100])))
-
-cat(paste0("\nTatsächlicher (Validation) Umsatz:\t", validation_labels[[1]][100]))
 ```
