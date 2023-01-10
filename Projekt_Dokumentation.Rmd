@@ -229,11 +229,11 @@ from tensorflow.keras.optimizers import Adam
 model = Sequential([
   InputLayer(input_shape = (len(r.training_features.keys()), )),
   BatchNormalization(),
-  Dense(len(r.training_features.keys()), activation = 'relu'),
+  Dense(len(r.training_features.keys()), activation = 'swish'),
   Dropout(0.2),
-  Dense(len(r.training_features.keys()), activation = 'relu'),
+  Dense(len(r.training_features.keys()), activation = 'swish'),
   Dropout(0.2),
-  Dense(len(r.training_features.keys()), activation = 'relu'),
+  Dense(len(r.training_features.keys()), activation = 'swish'),
   Dense(5)
 ])
 
@@ -248,7 +248,7 @@ model = Sequential([
 model.compile(loss="mape", optimizer=Adam(learning_rate=0.001))
 
 #Schätzung des Modells
-history = model.fit(r.training_features, r.training_labels, epochs = 200,
+history = model.fit(r.training_features, r.training_labels, epochs = 250,
                     validation_data = (r.validation_features, r.validation_labels), verbose = 0)
                     
 model.save("python_model.h5")
