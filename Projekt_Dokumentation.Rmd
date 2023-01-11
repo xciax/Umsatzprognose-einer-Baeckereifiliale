@@ -68,6 +68,48 @@ pj_schulferien <- schulferien
 ### allData_dummy
 
 ```{r}
+# Monatlichen Umsatzt von Nahrungsmittel Facheinzelhandel in SH (auch Bäckerein) --> Datenaufbereitung
+umsatztFachEinzelHandelSH <- read_csv("umsatztFachEinzelHandel.csv")
+umsatztFachEinzelHandelSH <- select(umsatztFachEinzelHandelSH, "Jahr", "Monat", "Umsatz")
+# Create a new column called "Datum"
+umsatztFachEinzelHandelSH$Datum <- as.Date(paste(umsatztFachEinzelHandelSH$Jahr, umsatztFachEinzelHandelSH$Monat, "01", sep = "-"), format = "%Y-%m-%d")
+
+# Remove the original Jahr and Monat columns
+umsatztFachEinzelHandelSH$Jahr <- NULL
+umsatztFachEinzelHandelSH$Monat <- NULL
+
+#grouping the dataframe by year and month
+umsatztFachEinzelHandelSH <- umsatztFachEinzelHandelSH %>% 
+    group_by(year(Datum), month(Datum))
+#selecting the first row of each group
+first_row <- umsatztFachEinzelHandelSH %>% 
+    slice_head(n=1)
+#creating a new data frame with all the days in each month
+days <- expand.grid(Jahr=unique(year(umsatztFachEinzelHandelSH$Datum)),Monat=unique(month(umsatztFachEinzelHandelSH$Datum)),Day=1:31)
+# converting the above grid to a date format
+days$Datum <- as.Date(paste(days$Jahr, days$Monat, days$Day, sep = "-"), format = "%Y-%m-%d")
+# Removing the unnecessary columns from days dataframe
+days$Jahr<-NULL
+days$Monat<-NULL
+days$Day<-NULL
+#merging the two dataframe
+umsatztFachEinzelHandelSH<-left_join(days,first_row,by=c("Datum"))
+# Remove the original Jahr and Monat columns
+umsatztFachEinzelHandelSH$`year(Datum)` <- NULL
+umsatztFachEinzelHandelSH$`month(Datum)` <- NULL
+umsatztFachEinzelHandelSH <- umsatztFachEinzelHandelSH %>% 
+    filter(Datum >= as.Date("2013-07-01"))
+umsatztFachEinzelHandelSH <- umsatztFachEinzelHandelSH %>% 
+    filter(Datum < as.Date("2019-07-31"))
+
+umsatztFachEinzelHandelSH <- umsatztFachEinzelHandelSH %>%  
+  hotdeck(variable = c("Umsatz"), ord_var = "Datum")
+
+ggplot(umsatztFachEinzelHandelSH) +
+  geom_point(aes(x = Datum, y = Umsatz, color = Umsatz_imp))
+
+umsatztFachEinzelHandelSH$Umsatz_imp <- NULL
+
 # Merge erstellt automatisch die Schnittmenge
 # Der Zusatz all.x = TRUE sorgt dafür, dass keine Zeilen (basierend auf Datensatz x) weggelöscht werden
 # Wetterdaten nach Datum hinzufügen
@@ -78,6 +120,8 @@ pj_umsatz_wetter_ferien <- merge(pj_umsatz_wetter, pj_schulferien, by="Datum", a
 
 # KiWo nach Datum hinzufügen
 allData <- merge(pj_umsatz_wetter_ferien, pj_kiwo, by="Datum", all.x = TRUE)
+
+allData <- merge(allData, umsatztFachEinzelHandelSH, by="Datum", all.x = TRUE)
 
 # auf fehlende Werte überprüfen:
 allData_na <- allData %>%
@@ -132,12 +176,14 @@ datum_sequenz <- seq(from = as.Date("2019-06-09"),
                      by = "days")
 
 # Füge die Daten der Sequenz dem Dataframe hinzu
+sBrot <- select(pj_umsatz, "Datum", "Saisonbrot")
 testDatenSatz <- rbind(testDatenSatz, data.frame(Datum = datum_sequenz))
 testDatenSatz$Wochentag <- weekdays(testDatenSatz$Datum)
 testDatenSatz <- merge(testDatenSatz, pj_wetter, by="Datum", all.x = TRUE)
 testDatenSatz <- merge(testDatenSatz, pj_schulferien, by="Datum", all.x = TRUE)
 testDatenSatz <- merge(testDatenSatz, pj_kiwo, by="Datum", all.x = TRUE)
-### Testdatensatz ###
+testDatenSatz <- merge(testDatenSatz, sBrot, by="Datum", all.x = TRUE)
+testDatenSatz <- merge(testDatenSatz, umsatztFachEinzelHandelSH, by="Datum", all.x = TRUE)
 
 testDatenSatz <- testDatenSatz %>% 
   hotdeck(variable = c("Temperatur", "Windstaerke"),
@@ -177,7 +223,7 @@ features <- c("day",                           "month",                         
               "WC_NA",                         "Bewoelkungsgrad_gering",        "Bewoelkungsgrad_keine",
               "Bewoelkungsgrad_mittel",        "Bewoelkungsgrad_stark",         "Bewoelkungsgrad_NA",
               "Schulferien",                   "KielerWoche",                   "Wochentag_Tuesday",          
-              "Wochentag_Thursday",
+              "Wochentag_Thursday",            "Saisonbrot",                    "Umsatz",
               "Wochentag_Friday",              "Wochentag_Wednesday",           "Wochentag_Monday",
               "Wochentag_Saturday",            "Wochentag_Sunday")
 
@@ -201,7 +247,7 @@ validation_features <- allData_dummy[assignment == 2, features]
 validation_labels <- allData_dummy[assignment == 2, labels]  
 validation_labels <- as.data.frame(validation_labels)
 
-testing_features <- testDatenSatz %>% select(features)
+testing_features <- testDatenSatz %>% select(all_of(features))
 
 #are there any missing values?
 table(is.na(training_features))
@@ -217,7 +263,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import InputLayer, Dense, BatchNormalization, Dropout
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import RMSprop
 
 # The argument "input_shape" for the definition of the input layer must include 
 # the number of input variables (features) used for the model. 
@@ -234,6 +280,8 @@ model = Sequential([
   Dense(len(r.training_features.keys()), activation = 'swish'),
   Dropout(0.2),
   Dense(len(r.training_features.keys()), activation = 'swish'),
+  Dropout(0.2),
+  Dense(len(r.training_features.keys()), activation = 'swish'),
   Dense(5)
 ])
 
@@ -245,7 +293,7 @@ model = Sequential([
 
 ```{python}
 # definition of the loss function and the optimazation function with hyperparameters
-model.compile(loss="mape", optimizer=Adam(learning_rate=0.001))
+model.compile(loss="mape", optimizer=RMSprop(learning_rate=0.001))
 
 #Schätzung des Modells
 history = model.fit(r.training_features, r.training_labels, epochs = 250,
