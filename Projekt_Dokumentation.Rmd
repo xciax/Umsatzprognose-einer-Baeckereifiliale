@@ -27,8 +27,11 @@ Wettercode (<http://www.seewetter-kiel.de/seewetter/daten_symbole.htm>)
 ```{r}
 remove(list = ls())
 # Create list with needed libraries
+# Quellen:
+#   1. synthpop: https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
+#   2. 
 pkgs <- c("lubridate", "stringr","tidyverse", "readr", 
-          "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM", "httr")
+          "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM", "synthpop", "httr")
 
 # Load each listed library and check if it is installed and install if necessary
 for (pkg in pkgs) {
@@ -151,16 +154,24 @@ ggplot(allData) +
 allData <- allData %>%
     mutate_at(c(12:34), ~replace(., is.na(.), 0))
 
+# generating synthetic data 
+synthpop_allData <- syn(allData)[["syn"]]
+
 # dummy coding der Wochentage
 allData_dummy <- dummy_cols(allData, select_columns = "Wochentag")
+synthpop_allData_dummy <- dummy_cols(synthpop_allData, select_columns = "Wochentag")
 
 allData_dummy$year <- year(allData_dummy$Datum)
 allData_dummy$month <- month(allData_dummy$Datum)
 allData_dummy$day <- day(allData_dummy$Datum)
+synthpop_allData_dummy$year <- year(synthpop_allData_dummy$Datum)
+synthpop_allData_dummy$month <- month(synthpop_allData_dummy$Datum)
+synthpop_allData_dummy$day <- day(synthpop_allData_dummy$Datum)
 
 allData_dummy$Datum <- NULL
+synthpop_allData_dummy$Datum <- NULL
 
-summary(allData_dummy)
+#summary(allData_dummy)
 save(allData_dummy, file="projectData_dummy.Rda")
 ```
 
@@ -222,10 +233,11 @@ features <- c("day",                           "month",                         
               "WC_Schnee",                     "WC_Sprühregen",                 "WC_Trockenereignisse",
               "WC_NA",                         "Bewoelkungsgrad_gering",        "Bewoelkungsgrad_keine",
               "Bewoelkungsgrad_mittel",        "Bewoelkungsgrad_stark",         "Bewoelkungsgrad_NA",
-              "Schulferien",                   "KielerWoche",                   "Wochentag_Tuesday",          
+              "Schulferien",                   "KielerWoche",                   "Wochentag_Tuesday",
               "Wochentag_Thursday",            "Saisonbrot",                    "Umsatz",
               "Wochentag_Friday",              "Wochentag_Wednesday",           "Wochentag_Monday",
-              "Wochentag_Saturday",            "Wochentag_Sunday")
+              "Wochentag_Saturday",            "Wochentag_Sunday"
+              )
 
 labels <- c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen")
 ```
@@ -237,10 +249,11 @@ labels <- c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen")
 set.seed(1)
 
 assignment <- sample(1:2, size = nrow(allData_dummy), prob = c(.8, .2), replace = TRUE)
+allData_dummy2 <- rbind(allData_dummy[assignment == 1,], synthpop_allData_dummy)
 
 # Create training, validation and test data for the features and the labels
-training_features <- allData_dummy[assignment == 1, features]    
-training_labels <- allData_dummy[assignment == 1, labels]    
+training_features <- allData_dummy2[,features]#[assignment == 1, features]    
+training_labels <- allData_dummy2[,labels]#[assignment == 1, labels]    
 training_labels <- as.data.frame(training_labels)
 
 validation_features <- allData_dummy[assignment == 2, features]  
@@ -280,6 +293,8 @@ model = Sequential([
   Dense(len(r.training_features.keys()), activation = 'swish'),
   Dropout(0.2),
   Dense(len(r.training_features.keys()), activation = 'swish'),
+  Dropout(0.2),
+  Dense(len(r.training_features.keys()), activation = 'swish'),
   Dense(5)
 ])
 
@@ -294,7 +309,7 @@ model = Sequential([
 model.compile(loss="mape", optimizer=Adam(learning_rate=0.001))
 
 #Schätzung des Modells
-history = model.fit(r.training_features, r.training_labels, epochs = 200,
+history = model.fit(r.training_features, r.training_labels, epochs = 750,
                     validation_data = (r.validation_features, r.validation_labels), verbose = 0)
 
 model.save("python_model.h5")
