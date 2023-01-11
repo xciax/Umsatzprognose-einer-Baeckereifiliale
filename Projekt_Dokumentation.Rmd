@@ -28,7 +28,7 @@ Wettercode (<http://www.seewetter-kiel.de/seewetter/daten_symbole.htm>)
 remove(list = ls())
 # Create list with needed libraries
 pkgs <- c("lubridate", "stringr","tidyverse", "readr", 
-          "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM")
+          "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM", "httr")
 
 # Load each listed library and check if it is installed and install if necessary
 for (pkg in pkgs) {
@@ -263,7 +263,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import InputLayer, Dense, BatchNormalization, Dropout
-from tensorflow.keras.optimizers import RMSprop
+from tensorflow.keras.optimizers import Adam
 
 # The argument "input_shape" for the definition of the input layer must include 
 # the number of input variables (features) used for the model. 
@@ -280,8 +280,6 @@ model = Sequential([
   Dense(len(r.training_features.keys()), activation = 'swish'),
   Dropout(0.2),
   Dense(len(r.training_features.keys()), activation = 'swish'),
-  Dropout(0.2),
-  Dense(len(r.training_features.keys()), activation = 'swish'),
   Dense(5)
 ])
 
@@ -293,12 +291,12 @@ model = Sequential([
 
 ```{python}
 # definition of the loss function and the optimazation function with hyperparameters
-model.compile(loss="mape", optimizer=RMSprop(learning_rate=0.001))
+model.compile(loss="mape", optimizer=Adam(learning_rate=0.001))
 
 #Schätzung des Modells
-history = model.fit(r.training_features, r.training_labels, epochs = 250,
+history = model.fit(r.training_features, r.training_labels, epochs = 200,
                     validation_data = (r.validation_features, r.validation_labels), verbose = 0)
-                    
+
 model.save("python_model.h5")
 ```
 
@@ -517,4 +515,8 @@ ggplot(data_test5) +
   labs(title="Prediction for the Test Data 5") +
   xlab("Case Number") +
   ylab("Price in EUR") 
+```
+
+```{r}
+
 ```
