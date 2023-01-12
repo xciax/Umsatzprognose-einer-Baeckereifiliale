@@ -44,10 +44,12 @@ for (pkg in pkgs) {
 
 ### Vorbereitete Datensätze laden
 
--   Wetterdaten wurden in "Datenaufbereitung_Wetter.Rmd" vorbereitet
--   Feiertagedaten wurden in "Datenaufbereitung_Feiertage.R" vorbereitet
--   Schulferien wurden in "Datenaufbereitung_Schulferien.R" vorbereitet
--   Umsatzdaten wurden in "Datenaufbereitung_Umsatz.R" vorbereitet
+Skripte, in denen die Daten aufbereitet wurden:
+-   Wetterdaten  --> "Datenaufbereitung_Wetter.Rmd" 
+-   Feiertagedaten  --> "Datenaufbereitung_Feiertage.R" 
+-   Schulferien  --> "Datenaufbereitung_Schulferien.R" 
+-   Umsatzdaten  --> "Datenaufbereitung_Umsatz.R" 
+-   Umsatzdaten aus dem Facheinzelhandel --> "??" 
 
 ```{r}
 # Lade Daten
@@ -62,57 +64,17 @@ load("pj_umsatz.Rda")
 load("schulferien.Rda")
 pj_schulferien <- schulferien
 
+load("UmsatzFachEinzelHandel.Rda")
+
 # Erste Betrachtung der Daten
 #summary(pj_wetter)
 #summary(pj_kiwo)
 #summary(pj_umsatz)
 ```
 
-### allData_dummy
+### Erstellung des Trainingsdatensatzen 
 
 ```{r}
-# Monatlichen Umsatzt von Nahrungsmittel Facheinzelhandel in SH (auch Bäckerein) --> Datenaufbereitung
-umsatztFachEinzelHandelSH <- read_csv("umsatztFachEinzelHandel.csv")
-umsatztFachEinzelHandelSH <- select(umsatztFachEinzelHandelSH, "Jahr", "Monat", "Umsatz")
-# Create a new column called "Datum"
-umsatztFachEinzelHandelSH$Datum <- as.Date(paste(umsatztFachEinzelHandelSH$Jahr, umsatztFachEinzelHandelSH$Monat, "01", sep = "-"), format = "%Y-%m-%d")
-
-# Remove the original Jahr and Monat columns
-umsatztFachEinzelHandelSH$Jahr <- NULL
-umsatztFachEinzelHandelSH$Monat <- NULL
-
-#grouping the dataframe by year and month
-umsatztFachEinzelHandelSH <- umsatztFachEinzelHandelSH %>% 
-    group_by(year(Datum), month(Datum))
-#selecting the first row of each group
-first_row <- umsatztFachEinzelHandelSH %>% 
-    slice_head(n=1)
-#creating a new data frame with all the days in each month
-days <- expand.grid(Jahr=unique(year(umsatztFachEinzelHandelSH$Datum)),Monat=unique(month(umsatztFachEinzelHandelSH$Datum)),Day=1:31)
-# converting the above grid to a date format
-days$Datum <- as.Date(paste(days$Jahr, days$Monat, days$Day, sep = "-"), format = "%Y-%m-%d")
-# Removing the unnecessary columns from days dataframe
-days$Jahr<-NULL
-days$Monat<-NULL
-days$Day<-NULL
-#merging the two dataframe
-umsatztFachEinzelHandelSH<-left_join(days,first_row,by=c("Datum"))
-# Remove the original Jahr and Monat columns
-umsatztFachEinzelHandelSH$`year(Datum)` <- NULL
-umsatztFachEinzelHandelSH$`month(Datum)` <- NULL
-umsatztFachEinzelHandelSH <- umsatztFachEinzelHandelSH %>% 
-    filter(Datum >= as.Date("2013-07-01"))
-umsatztFachEinzelHandelSH <- umsatztFachEinzelHandelSH %>% 
-    filter(Datum < as.Date("2019-07-31"))
-
-umsatztFachEinzelHandelSH <- umsatztFachEinzelHandelSH %>%  
-  hotdeck(variable = c("Umsatz"), ord_var = "Datum")
-
-ggplot(umsatztFachEinzelHandelSH) +
-  geom_point(aes(x = Datum, y = Umsatz, color = Umsatz_imp))
-
-umsatztFachEinzelHandelSH$Umsatz_imp <- NULL
-
 # Merge erstellt automatisch die Schnittmenge
 # Der Zusatz all.x = TRUE sorgt dafür, dass keine Zeilen (basierend auf Datensatz x) weggelöscht werden
 # Wetterdaten nach Datum hinzufügen

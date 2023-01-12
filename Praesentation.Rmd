@@ -1,0 +1,156 @@
+---
+title: "Projektpräsentation"
+output: html_notebook
+---
+
+## Umsatzvorhersage für eine Bäckereifiliale in Kiel ##
+
+von Clara Urban und Armando Criscuolo
+
+```{r include = FALSE}
+remove(list = ls())
+# Create list with needed libraries
+# Quellen:
+#   1. synthpop: https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
+#   2. 
+pkgs <- c("lubridate", "stringr","tidyverse", "readr", 
+          "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM", "synthpop", "httr", "rmarkdown")
+
+# Load each listed library and check if it is installed and install if necessary
+for (pkg in pkgs) {
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg)
+    library(pkg, character.only = TRUE)
+  }
+}
+
+
+```
+
+
+### 1. Erstellte Variablen ###
+
+- Schulferien Schleswig-Holstein
+- Umsatz im Facheinzelhandel in Schleswig-Holstein
+- Kieler Woche
+- Wochentag
+- Tag des Monats
+- Monat
+- Wetterdaten:
+  - Windstärke (Beaufort-Skala)
+  - Temperatur
+  - Bewölkungsgrad (keine, gering, mittel, stark)
+  - Wettercode (ww-Code)
+  
+
+### 2. Graphische Auswertung 
+
+#### a. Schulferien
+
+```{r echo = FALSE}
+# Schulferien 
+
+load("schulferien.Rda")
+load("pj_umsatz.Rda")
+
+umsatz <- pj_umsatz
+
+# Daten zusammenführen
+umsatz_ferien <-
+  merge(umsatz, schulferien, by = "Datum", all.x = TRUE)
+
+umsatz_ferien$Konditorei_imp <- NULL
+
+# NA --> 0
+umsatz_ferien <- umsatz_ferien %>%
+  mutate_at("Schulferien", ~ replace(., is.na(.), 0)) %>%
+  gather(Warengruppe, Umsatz, -Datum, -Wochentag, -Schulferien)
+
+umsatz_ferien$Schulferien <- as.factor(umsatz_ferien$Schulferien)
+
+# Mean und Konfidenzintervalle berechnen
+plot_data <- umsatz_ferien %>%
+  group_by(Warengruppe, Schulferien) %>%
+  summarise(
+    n = n(),
+    mean = mean(Umsatz),
+    sd = sd(Umsatz),
+    .groups = "drop"
+  ) %>%
+  mutate(se = sd / sqrt(n))  %>%
+  mutate(ic = se * qt((1 - 0.05) / 2 + .5, n - 1))
+
+# Daten plotten
+ggplot(plot_data,
+       aes(x = Warengruppe, y = mean, fill = Schulferien)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(
+    aes(ymin = mean - ic, ymax = mean + ic),
+    width = 0.4,
+    colour = "black",
+    alpha = 0.9,
+    size = 0.5,
+    position = position_dodge(0.9)
+  ) +
+  labs(
+    title = "Bäckereitagesumsatz in Abhängigkeit der Schulferien 2013 - 2019",
+    subtitle = "dargestellt nach Warengruppen mit Konfidenzintervallen") +
+  ylab("durchschnittlicher Umsatz in €/Tag")
+
+
+```
+
+#### b. Bewölkung
+
+```{r echo = FALSE}
+# Schulferien 
+
+load("wetter.Rda")
+wetter <- pj_wetter
+
+# Datensätze zusammenführen
+umsatz_wetter <- merge(umsatz, wetter, by = "Datum" )
+umsatz_wetter$Konditorei_imp <- NULL
+
+# wide to long format
+umsatz_wetter <- umsatz_wetter %>%
+  gather(Warengruppe, Umsatz, -Datum, -Wochentag, -Windstaerke, -Bewoelkungsgrad,  -WC, -Temperatur,)
+
+# factor levels für die Bewölkung
+umsatz_wetter$Bewoelkungsgrad <- factor(umsatz_wetter$Bewoelkungsgrad, 
+                                        levels = c("keine", "gering", "mittel", "stark"))
+# Mean und Konfidenzintervalle berechnen
+plot_data2 <- umsatz_wetter %>%
+  group_by(Warengruppe, Bewoelkungsgrad) %>%
+  summarise(
+    n = n(),
+    mean = mean(Umsatz),
+    sd = sd(Umsatz),
+    .groups = "drop"
+  ) %>%
+  mutate(se = sd / sqrt(n))  %>%
+  mutate(ic = se * qt((1 - 0.05) / 2 + .5, n - 1))
+
+# Daten plotten
+ggplot(plot_data2,
+       aes(x = Warengruppe, y = mean, fill = Bewoelkungsgrad)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(
+    aes(ymin = mean - ic, ymax = mean + ic),
+    width = 0.4,
+    colour = "black",
+    alpha = 0.9,
+    size = 0.5,
+    position = position_dodge(0.9)
+  ) +
+  labs(
+    title = "Bäckereitagesumsatz in Abhängigkeit der Bewölkung 2013 - 2019",
+    subtitle = "dargestellt nach Warengruppen mit Konfidenzintervallen") +
+  ylab("durchschnittlicher Umsatz in €/Tag")
+
+
+```
+
+
+  to be continued...
+  

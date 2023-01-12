@@ -135,6 +135,8 @@ pj_wetter <- merge(pj_wetter, bewoelkungsgrad, by = "Bewoelkung", all.x = TRUE)
 pj_wetter <- pj_wetter %>%
   select(Datum, Windstaerke, Bewoelkungsgrad, WC, Temperatur)
 
+save(pj_wetter, file="wetter.Rda")
+
 ```
 
 
