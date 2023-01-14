@@ -26,6 +26,7 @@ days$Monat<-NULL
 days$Day<-NULL
 #merging the two dataframe
 umsatzFachEinzelHandelSH<-left_join(days,first_row,by=c("Datum"))
+
 # Remove the original Jahr and Monat columns
 umsatzFachEinzelHandelSH$`year(Datum)` <- NULL
 umsatzFachEinzelHandelSH$`month(Datum)` <- NULL
@@ -42,5 +43,7 @@ ggplot(umsatzFachEinzelHandelSH) +
 
 umsatzFachEinzelHandelSH$Umsatz_imp <- NULL
 
+umsatzFachEinzelHandelSH <- umsatzFachEinzelHandelSH %>%
+  rename(UmsatzFEH = Umsatz)
 
 save(umsatzFachEinzelHandelSH, file="umsatzFachEinzelHandelSH.Rda")

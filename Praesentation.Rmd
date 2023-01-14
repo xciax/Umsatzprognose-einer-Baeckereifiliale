@@ -3,9 +3,9 @@ title: "Projektpräsentation"
 output: html_notebook
 ---
 
-## Umsatzvorhersage für eine Bäckereifiliale in Kiel ##
+## Umsatzvorhersage für eine Bäckereifiliale in Kiel durch maschinelles Lernen 
 
-von Clara Urban und Armando Criscuolo
+von Armando Criscuolo und Clara Urban
 
 ```{r include = FALSE}
 remove(list = ls())
@@ -28,7 +28,7 @@ for (pkg in pkgs) {
 ```
 
 
-### 1. Erstellte Variablen ###
+### 1. Variablen 
 
 - Schulferien Schleswig-Holstein
 - Umsatz im Facheinzelhandel in Schleswig-Holstein
@@ -38,7 +38,7 @@ for (pkg in pkgs) {
 - Monat
 - Wetterdaten:
   - Windstärke (Beaufort-Skala)
-  - Temperatur
+  - Temperatur (in °C)
   - Bewölkungsgrad (keine, gering, mittel, stark)
   - Wettercode (ww-Code)
   
@@ -93,7 +93,7 @@ ggplot(plot_data,
     position = position_dodge(0.9)
   ) +
   labs(
-    title = "Bäckereitagesumsatz in Abhängigkeit der Schulferien 2013 - 2019",
+    title = "Bäckereitagesumsatz nach Schulferienstatus 2013 - 2019",
     subtitle = "dargestellt nach Warengruppen mit Konfidenzintervallen") +
   ylab("durchschnittlicher Umsatz in €/Tag")
 
@@ -109,16 +109,26 @@ load("wetter.Rda")
 wetter <- pj_wetter
 
 # Datensätze zusammenführen
-umsatz_wetter <- merge(umsatz, wetter, by = "Datum" )
+umsatz_wetter <- merge(umsatz, wetter, by = "Datum")
 umsatz_wetter$Konditorei_imp <- NULL
 
 # wide to long format
 umsatz_wetter <- umsatz_wetter %>%
-  gather(Warengruppe, Umsatz, -Datum, -Wochentag, -Windstaerke, -Bewoelkungsgrad,  -WC, -Temperatur,)
+  gather(
+    Warengruppe,
+    Umsatz,
+    -Datum,
+    -Wochentag,
+    -Windstaerke,
+    -Bewoelkungsgrad,
+    -WC,
+    -Temperatur,
+  )
 
 # factor levels für die Bewölkung
-umsatz_wetter$Bewoelkungsgrad <- factor(umsatz_wetter$Bewoelkungsgrad, 
-                                        levels = c("keine", "gering", "mittel", "stark"))
+umsatz_wetter$Bewoelkungsgrad <-
+  factor(umsatz_wetter$Bewoelkungsgrad,
+         levels = c("keine", "gering", "mittel", "stark"))
 # Mean und Konfidenzintervalle berechnen
 plot_data2 <- umsatz_wetter %>%
   group_by(Warengruppe, Bewoelkungsgrad) %>%
@@ -143,14 +153,144 @@ ggplot(plot_data2,
     size = 0.5,
     position = position_dodge(0.9)
   ) +
-  labs(
-    title = "Bäckereitagesumsatz in Abhängigkeit der Bewölkung 2013 - 2019",
-    subtitle = "dargestellt nach Warengruppen mit Konfidenzintervallen") +
+  labs(title = "Bäckereitagesumsatz nach Bewölkungsgrad, 2013 - 2019",
+       subtitle = "dargestellt nach Warengruppen mit Konfidenzintervallen") +
   ylab("durchschnittlicher Umsatz in €/Tag")
 
 
 ```
 
+### Erstellen des Neuronalen Netztes
 
-  to be continued...
+
+#### Features & Labels --> vielleicht raus?
+
+```{r}
+features <- c("day",                           "month",                         "year",
+              "Windstaerke",                   "Temperatur",                    "WC_Bewölkung_abnehmend",
+              "WC_Bewölkung_gleichbleibend",   "WC_Bewölkung_nicht_beobachtet", "WC_Bewölkung_zunehmend",
+              "WC_Dunst_Staub",                "WC_Ereignisse_letzte_h",        "WC_Gewitter",
+              "WC_Nebel_Eisnebel",             "WC_Regen",                      "WC_Schauer",
+              "WC_Schnee",                     "WC_Sprühregen",                 "WC_Trockenereignisse",
+              "WC_NA",                         "Bewoelkungsgrad_gering",        "Bewoelkungsgrad_keine",
+              "Bewoelkungsgrad_mittel",        "Bewoelkungsgrad_stark",         "Bewoelkungsgrad_NA",
+              "Schulferien",                   "KielerWoche",                   "Wochentag_Tuesday",
+              "Wochentag_Thursday",            "Saisonbrot",                    "Umsatz",
+              "Wochentag_Friday",              "Wochentag_Wednesday",           "Wochentag_Monday",
+              "Wochentag_Saturday",            "Wochentag_Sunday"
+              )
+
+labels <- c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen")
+```       
+
   
+#### Selection of Training, Validation and Test Data
+
+```{r}
+# lade Trainings- und Testdatensatz
+load("projectData_dummy.Rda")
+trainValidData <- allData_dummy
+
+load("Datenaufbereitung_Testdaten.Rda")
+testData <- testDatenSatz
+
+# Setting the random counter to a fixed value, so the random initialization stays the same (the random split is always the same)
+set.seed(1)
+
+assignment <-
+  sample(
+    1:2,
+    size = nrow(trainValidData),
+    prob = c(.8, .2),
+    replace = TRUE
+  )
+
+trainValidData2 <-
+  rbind(trainValidData[assignment == 1, ], synthpop_testValidData)
+
+# Create training, validation and test data for the features and the labels
+training_features <- trainValidData2[, features] #[assignment == 1, features]
+training_labels <- trainValidData2[, labels] #[assignment == 1, labels]
+training_labels <- as.data.frame(training_labels)
+
+
+validation_features <- trainValidData[assignment == 2, features]
+validation_labels <- trainValidData[assignment == 2, labels]
+validation_labels <- as.data.frame(validation_labels)
+
+testing_features <- testData %>% select(all_of(features))
+
+```
+
+
+### AUfstellung des Modells in Python
+
+```{python include = FALSE}
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import InputLayer, Dense, BatchNormalization, Dropout
+from tensorflow.keras.optimizers import Adam
+
+```
+
+```{python}
+
+model = Sequential([
+  InputLayer(input_shape = (len(r.training_features.keys()), )),
+  BatchNormalization(),
+  Dense(len(r.training_features.keys()), activation = 'swish'),
+  Dropout(0.2),
+  Dense(len(r.training_features.keys()), activation = 'swish'),
+  Dropout(0.2),
+  Dense(len(r.training_features.keys()), activation = 'swish'),
+  Dropout(0.2),
+  Dense(len(r.training_features.keys()), activation = 'swish'),
+  Dense(5)
+])
+
+```
+
+### Schätzung de neuronalen Netzes
+
+```{python}
+# definition of the loss function and the optimazation function with hyperparameters
+model.compile(loss="mape", optimizer=Adam(learning_rate=0.001))
+
+#Schätzung des Modells
+history = model.fit(r.training_features, r.training_labels, epochs=750,
+                    validation_data = (r.validation_features, r.validation_labels), verbose=0)
+
+model.save("python_model.h5")
+```
+
+### graphische Ausgabe der Modelloptimierung
+
+```{r echo = FALSE}
+# Graphische Ausgabe der Modelloptimierung
+
+#create data
+data <- data.frame(
+  val_loss = unlist(py$history$history$val_loss),
+  loss = unlist(py$history$history$loss)
+)
+
+ggplot(data[-(1:10),]) +
+  geom_line(aes(
+    x = 1:length(val_loss),
+    y = val_loss,
+    colour = "Validation Loss"
+  )) +
+  geom_line(aes(
+    x = 1:length(loss),
+    y = loss,
+    colour = "Training Loss"
+  )) +
+  scale_colour_manual(values = c(
+    "Training Loss" = "blue",
+    "Validation Loss" = "red"
+  )) +
+  labs(title = "Loss Function Values During Optimazation") +
+  xlab("Iteration Number") +
+  ylab("Loss")
+```
