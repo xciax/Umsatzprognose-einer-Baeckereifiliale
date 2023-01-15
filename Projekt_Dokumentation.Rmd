@@ -64,7 +64,7 @@ load("pj_umsatz.Rda")
 load("schulferien.Rda")
 pj_schulferien <- schulferien
 
-load("UmsatzFachEinzelHandel.Rda")
+load("umsatzFachEinzelHandelSH.Rda")
 
 # Erste Betrachtung der Daten
 #summary(pj_wetter)
@@ -86,7 +86,7 @@ pj_umsatz_wetter_ferien <- merge(pj_umsatz_wetter, pj_schulferien, by="Datum", a
 # KiWo nach Datum hinzufügen
 allData <- merge(pj_umsatz_wetter_ferien, pj_kiwo, by="Datum", all.x = TRUE)
 
-allData <- merge(allData, umsatztFachEinzelHandelSH, by="Datum", all.x = TRUE)
+allData <- merge(allData, umsatzFachEinzelHandelSH, by="Datum", all.x = TRUE)
 
 # auf fehlende Werte überprüfen:
 allData_na <- allData %>%
@@ -119,6 +119,7 @@ allData <- allData %>%
 # generating synthetic data 
 synthpop_allData <- syn(allData)[["syn"]]
 
+
 # dummy coding der Wochentage
 allData_dummy <- dummy_cols(allData, select_columns = "Wochentag")
 synthpop_allData_dummy <- dummy_cols(synthpop_allData, select_columns = "Wochentag")
@@ -135,6 +136,8 @@ synthpop_allData_dummy$Datum <- NULL
 
 #summary(allData_dummy)
 save(allData_dummy, file="projectData_dummy.Rda")
+save(synthpop_allData_dummy, file = "projectSynthpopData_dummy.Rda")
+
 ```
 
 ### Testdatensatz
@@ -156,7 +159,7 @@ testDatenSatz <- merge(testDatenSatz, pj_wetter, by="Datum", all.x = TRUE)
 testDatenSatz <- merge(testDatenSatz, pj_schulferien, by="Datum", all.x = TRUE)
 testDatenSatz <- merge(testDatenSatz, pj_kiwo, by="Datum", all.x = TRUE)
 testDatenSatz <- merge(testDatenSatz, sBrot, by="Datum", all.x = TRUE)
-testDatenSatz <- merge(testDatenSatz, umsatztFachEinzelHandelSH, by="Datum", all.x = TRUE)
+testDatenSatz <- merge(testDatenSatz, umsatzFachEinzelHandelSH, by="Datum", all.x = TRUE)
 
 testDatenSatz <- testDatenSatz %>% 
   hotdeck(variable = c("Temperatur", "Windstaerke"),
@@ -196,7 +199,7 @@ features <- c("day",                           "month",                         
               "WC_NA",                         "Bewoelkungsgrad_gering",        "Bewoelkungsgrad_keine",
               "Bewoelkungsgrad_mittel",        "Bewoelkungsgrad_stark",         "Bewoelkungsgrad_NA",
               "Schulferien",                   "KielerWoche",                   "Wochentag_Tuesday",
-              "Wochentag_Thursday",            "Saisonbrot",                    "Umsatz",
+              "Wochentag_Thursday",            "Saisonbrot",                    "UmsatzFEH",
               "Wochentag_Friday",              "Wochentag_Wednesday",           "Wochentag_Monday",
               "Wochentag_Saturday",            "Wochentag_Sunday"
               )
@@ -222,7 +225,8 @@ validation_features <- allData_dummy[assignment == 2, features]
 validation_labels <- allData_dummy[assignment == 2, labels]  
 validation_labels <- as.data.frame(validation_labels)
 
-testing_features <- testDatenSatz %>% select(all_of(features))
+testing_features <- testDatenSatz %>% 
+  select(all_of(features)) 
 
 #are there any missing values?
 table(is.na(training_features))
@@ -236,6 +240,7 @@ table(is.na(testing_features))
 ```{python}
 import numpy as np
 import tensorflow as tf
+
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import InputLayer, Dense, BatchNormalization, Dropout
 from tensorflow.keras.optimizers import Adam
@@ -263,6 +268,16 @@ model = Sequential([
 # Ausgabe einer ZUsammenfassung zur Form des MOdells, das geschätzt wird (nicht notwendig)
 #model.summary()
 ```
+
+```{python}
+import pandas as pd
+
+from pandas_profiling import ProfileReport
+
+profile = ProfileReport(r.trainValidData, title = "Data Profiling Report")
+
+```
+
 
 ### Schätzung de neuronalen Netzes
 
@@ -293,6 +308,8 @@ ggplot(data[-(1:10), ])+
   labs(title = "Loss Function Values During Optimazation") +
   xlab("Iteration Number") +
   ylab("Loss")
+
+
 ```
 
 ### Auswertung der Schätzergebnisse

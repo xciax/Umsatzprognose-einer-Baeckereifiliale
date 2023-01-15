@@ -29,6 +29,7 @@ umsatzFachEinzelHandelSH<-left_join(days,first_row,by=c("Datum"))
 
 # Remove the original Jahr and Monat columns
 umsatzFachEinzelHandelSH$`year(Datum)` <- NULL
+
 umsatzFachEinzelHandelSH$`month(Datum)` <- NULL
 umsatzFachEinzelHandelSH <- umsatzFachEinzelHandelSH %>% 
   filter(Datum >= as.Date("2013-07-01"))
