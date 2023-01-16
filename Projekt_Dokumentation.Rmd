@@ -131,6 +131,9 @@ synthpop_allData_dummy$year <- year(synthpop_allData_dummy$Datum)
 synthpop_allData_dummy$month <- month(synthpop_allData_dummy$Datum)
 synthpop_allData_dummy$day <- day(synthpop_allData_dummy$Datum)
 
+save(allData_dummy, file="projectData_dummy_D.Rda")
+save(synthpop_allData_dummy, file = "projectSynthpopData_dummy_D.Rda")
+
 allData_dummy$Datum <- NULL
 synthpop_allData_dummy$Datum <- NULL
 
@@ -256,8 +259,6 @@ from tensorflow.keras.optimizers import Adam
 model = Sequential([
   InputLayer(input_shape = (len(r.training_features.keys()), )),
   BatchNormalization(),
-  Dense(len(r.training_features.keys()), activation = 'swish'),
-  Dropout(0.2),
   Dense(len(r.training_features.keys()), activation = 'swish'),
   Dropout(0.2),
   Dense(len(r.training_features.keys()), activation = 'swish'),

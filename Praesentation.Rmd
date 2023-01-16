@@ -1,6 +1,8 @@
 ---
 title: "Projektpräsentation"
-output: html_notebook
+output:
+  html_notebook: default
+  word_document: default
 ---
 
 ## Umsatzvorhersage für eine Bäckereifiliale in Kiel durch maschinelles Lernen
@@ -27,7 +29,7 @@ for (pkg in pkgs) {
 
 ```
 
-### 1. Variablen
+## 1. Variablen
 
 -   Schulferien Schleswig-Holstein
 -   Umsatz im Facheinzelhandel mit Nahrungsmitteln in Schleswig-Holstein
@@ -41,7 +43,11 @@ for (pkg in pkgs) {
     -   Bewölkungsgrad (keine, gering, mittel, stark)
     -   Wettercode (ww-Code)
 
-### 2. Graphische Auswertung
+#### Datensatzsuche mit Google
+![Scan me!](/Users/armandocriscuolo/Desktop/Bildschirm­foto 2023-01-16 um 17.36.38.png)
+Link: https://datasetsearch.research.google.com
+
+## 2. Graphische Auswertung
 
 #### a. Schulferien
 
@@ -55,9 +61,10 @@ umsatz <- pj_umsatz
 
 # Daten zusammenführen
 umsatz_ferien <-
-  merge(umsatz, schulferien, by = "Datum", all.x = TRUE)
+  merge(umsatz, schulferien, by="Datum", all.x = TRUE)
 
 umsatz_ferien$Konditorei_imp <- NULL
+umsatz_ferien$Saisonbrot <- NULL
 
 # NA --> 0
 umsatz_ferien <- umsatz_ferien %>%
@@ -109,6 +116,7 @@ wetter <- pj_wetter
 # Datensätze zusammenführen
 umsatz_wetter <- merge(umsatz, wetter, by = "Datum")
 umsatz_wetter$Konditorei_imp <- NULL
+umsatz_wetter$Saisonbrot <- NULL
 
 # wide to long format
 umsatz_wetter <- umsatz_wetter %>%
@@ -158,7 +166,48 @@ ggplot(plot_data2,
 
 ```
 
-### Optimierung des neuronalen Netztes
+#### c. Wochentag
+
+```{r echo = FALSE}
+load("pj_umsatz.Rda")
+umsatz_W <- pj_umsatz
+umsatz_W$Saisonbrot <- NULL
+umsatz_W$Konditorei_imp <- NULL
+
+umsatz_W <- umsatz_W %>% gather(Warengruppe, Umsatz, -Datum, -Wochentag)
+
+# Mean und Konfidenzintervalle berechnen
+plot_data3 <- umsatz_W %>%
+  group_by(Warengruppe, Wochentag) %>%
+  summarise(
+    n = n(),
+    mean = mean(Umsatz),
+    sd = sd(Umsatz),
+    .groups = "drop"
+  ) %>%
+  mutate(se = sd / sqrt(n))  %>%
+  mutate(ic = se * qt((1 - 0.05) / 2 + .5, n - 1))
+
+plot_data3$Wochentag <- factor(plot_data3$Wochentag, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+
+# Daten plotten
+ggplot(plot_data3,
+       aes(x = Warengruppe, y = mean, fill = Wochentag)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(
+    aes(ymin = mean - ic, ymax = mean + ic),
+    width = 0.4,
+    colour = "black",
+    alpha = 0.9,
+    size = 0.5,
+    position = position_dodge(0.9)
+  ) +
+  labs(title = "Bäckereitagesumsatz nach Wochentag, 2013 - 2019",
+       subtitle = "dargestellt nach Warengruppen mit Konfidenzintervallen") +
+  ylab("durchschnittlicher Umsatz in €/Tag")
+```
+
+## 3. Optimierung das neuronalen Netztes
 
 -   Hyperparameter:
     -   Anzahl der Knoten im Hidden Layer
@@ -169,6 +218,8 @@ ggplot(plot_data2,
 -   Datensätze:
     -   Datenform von bestimmten Variablen verändert / angepasst
     -   Erstellung synthetischer Daten
+
+### Hyperparameter
 
 #### Aufstellung des Modells
 
@@ -261,13 +312,13 @@ model = Sequential([
 model.compile(loss="mape", optimizer=Adam(learning_rate=0.001))
 
 #Schätzung des Modells
-history = model.fit(r.training_features, r.training_labels, epochs=400,
+history = model.fit(r.training_features, r.training_labels, epochs=300,
                     validation_data = (r.validation_features, r.validation_labels), verbose=0)
 
 model.save("python_model.h5")
 ```
 
-### Graphische Ausgabe der Modelloptimierung
+#### Graphische Ausgabe der Modelloptimierung
 
 ```{r echo = FALSE}
 # Graphische Ausgabe der Modelloptimierung
@@ -313,11 +364,11 @@ c <- format(mape(training_labels[,3], training_predictions[,3])*100, digits=3, n
 d <- format(mape(training_labels[,4], training_predictions[,4])*100, digits=3, nsmall=2)
 e <- format(mape(training_labels[,5], training_predictions[,5])*100, digits=3, nsmall=2)
 
-cat(paste0("\nMAPE on the Training Data1:\t", a))
-cat(paste0("\nMAPE on the Training Data2:\t", b))
-cat(paste0("\nMAPE on the Training Data3:\t", c))
-cat(paste0("\nMAPE on the Training Data4:\t", d))
-cat(paste0("\nMAPE on the Training Data5:\t", e, "\n"))
+cat(paste0("\nMAPE Warengruppe 1:\t", a))
+cat(paste0("\nMAPE Warengruppe 2:\t", b))
+cat(paste0("\nMAPE Warengruppe 3:\t", c))
+cat(paste0("\nMAPE Warengruppe 4:\t", d))
+cat(paste0("\nMAPE Warengruppe 5:\t", e, "\n"))
 
 g <- format(mape(validation_labels[,1], validation_predictions[,1])*100, digits=3, nsmall=2)
 h <- format(mape(validation_labels[,2], validation_predictions[,2])*100, digits=3, nsmall=2)
@@ -325,11 +376,11 @@ i <- format(mape(validation_labels[,3], validation_predictions[,3])*100, digits=
 j <- format(mape(validation_labels[,4], validation_predictions[,4])*100, digits=3, nsmall=2)
 k <- format(mape(validation_labels[,5], validation_predictions[,5])*100, digits=3, nsmall=2)
   
-cat(paste0("\nMAPE on the Validation Data1:\t", g))
-cat(paste0("\nMAPE on the Validation Data2:\t", h))
-cat(paste0("\nMAPE on the Validation Data3:\t", i))
-cat(paste0("\nMAPE on the Validation Data4:\t", j))
-cat(paste0("\nMAPE on the Validation Data5:\t", k, "\n"))
+cat(paste0("\nMAPE Warengruppe 1:\t", g))
+cat(paste0("\nMAPE Warengruppe 2:\t", h))
+cat(paste0("\nMAPE Warengruppe 3:\t", i))
+cat(paste0("\nMAPE Warengruppe 4:\t", j))
+cat(paste0("\nMAPE Warengruppe 5:\t", k, "\n"))
 
 # Mean of Training and Validation Data MAPE
 meanT <- c(as.double(a), as.double(b), as.double(c), as.double(d), as.double(e)) 
@@ -370,8 +421,39 @@ ggplot(data_val3) +
   xlab("Case Number") +
   ylab("Price in EUR")
 ```
+### Synthetische Daten 
+#### Dokumentation der Package "synthpop"
+![Scan me!](/Users/armandocriscuolo/Desktop/Bildschirm­foto 2023-01-16 um 19.40.33.png)
+Link: https://cran.r-project.org/web/packages/synthpop/synthpop.pdf
 
-### Evaluationsergebnis für den Zeitraum vom 09.06. - 30.07.2019
+```{r echo=FALSE}
+load("projectData_dummy_D.Rda")
+realData <- allData_dummy
+
+load("projectSynthpopData_dummy_D.Rda")
+synthpopData <- synthpop_allData_dummy
+
+realDataN <- realData %>% select("Datum", "Brot", "Brötchen")
+synthpopDataN <- synthpopData %>% select("Datum", "Brot", "Brötchen")
+
+# Data Frames sortieren
+realDataN <- realDataN %>% arrange(Datum)
+synthpopDataN <- synthpopDataN %>% arrange(Datum)
+```
+
+#### Reale Daten
+
+```{r echo=FALSE}
+realDataN[c(1:10),]
+```
+
+#### Synthetische Daten
+
+```{r echo=FALSE}
+synthpopDataN[c(1:10),]
+```
+
+## 4. Evaluationsergebnis für den Zeitraum vom 09.06. - 30.07.2019
 
 ```{r echo=FALSE}
 testing_predictions2 <- as.data.frame(py$model$predict(testing_features))
@@ -395,7 +477,9 @@ name <- "Gruppe 2"
 # Execution of the request
 r <- POST("https://bakery-sales-mape-tolicqztoq-ey.a.run.app/", 
           body = list(name=name, predictions=predictions),
-          encode = "json")
+          encode = "json",
+          show_col_types = FALSE)
 # Output of MAPE in Percent
-paste0(content(r, "parsed", "application/json", show_col_types = FALSE))
+MAPE <- content(r, "parsed", "application/json", show_col_types = FALSE)
+cat(paste0("Realer MAPE: ", MAPE))
 ```
