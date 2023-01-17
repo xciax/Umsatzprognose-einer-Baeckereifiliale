@@ -202,7 +202,8 @@ features <- c("day",                           "month",                         
               "WC_Schnee",                     "WC_Sprühregen",                 "WC_Trockenereignisse",
               "WC_NA",                         "Bewoelkungsgrad_gering",        "Bewoelkungsgrad_keine",
               "Bewoelkungsgrad_mittel",        "Bewoelkungsgrad_stark",         "Bewoelkungsgrad_NA",
-              "Schulferien",                   "KielerWoche",                   "Wochentag_Tuesday",
+              "Schulferien",                   "KielerWoche"                   
+              "Wochentag_Tuesday",
               "Wochentag_Thursday",            "Saisonbrot",                    "UmsatzFEH",
               "Wochentag_Friday",              "Wochentag_Wednesday",           "Wochentag_Monday",
               "Wochentag_Saturday",            "Wochentag_Sunday"

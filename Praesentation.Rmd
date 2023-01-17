@@ -207,7 +207,7 @@ ggplot(plot_data3,
   ylab("durchschnittlicher Umsatz in €/Tag")
 ```
 
-## 3. Optimierung das neuronalen Netztes
+## 3. Optimierung des neuronalen Netztes
 
 -   Hyperparameter:
     -   Anzahl der Knoten im Hidden Layer
