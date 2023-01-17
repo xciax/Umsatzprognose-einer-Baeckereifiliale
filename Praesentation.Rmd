@@ -401,13 +401,6 @@ ggplot(data_val2) +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-# Plot der Ergebnisse der Testdaten
-ggplot(data_test2) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  labs(title="Prediction for the Test Data 2") +
-  xlab("Case Number") +
-  ylab("Price in EUR") 
-
 #------------------------- 3 -------------------------#
 
 data_val3 <- data.frame(prediction = validation_predictions[,3], actual = validation_labels[,3])
