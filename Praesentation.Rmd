@@ -1,13 +1,22 @@
 ---
 title: "Projektpräsentation"
+subtitle: "Umsatzvorhersage für eine Bäckereifiliale in Kiel durch maschinelles Lernen"
+author: <i> Armando Criscuolo und Clara Urban </i>
 output:
-  html_notebook: default
-  word_document: default
+  html_notebook: 
+    theme: cosmo
+  pdf_document: default
 ---
 
-## Umsatzvorhersage für eine Bäckereifiliale in Kiel durch maschinelles Lernen
 
-von Armando Criscuolo und Clara Urban
+```{css, echo = FALSE}
+
+h1, h2 {
+  text-align: center;
+}
+
+```
+
 
 ```{r include = FALSE}
 remove(list = ls())
@@ -29,7 +38,13 @@ for (pkg in pkgs) {
 
 ```
 
-## 1. Variablen
+<br>
+
+## 1. Datenaufbereitung
+
+<br>
+
+### Erstellte Variablen
 
 -   Schulferien Schleswig-Holstein
 -   Umsatz im Facheinzelhandel mit Nahrungsmitteln in Schleswig-Holstein
@@ -43,11 +58,16 @@ for (pkg in pkgs) {
     -   Bewölkungsgrad (keine, gering, mittel, stark)
     -   Wettercode (ww-Code)
 
-#### Datensatzsuche mit Google
+
+<br>
+
+#### EXKURS: Datensatzsuche mit Google
 ![Scan me!](/Users/armandocriscuolo/Desktop/Bildschirm­foto 2023-01-16 um 17.36.38.png)
 Link: https://datasetsearch.research.google.com
 
-## 2. Graphische Auswertung
+<br>
+
+### Graphische Auswertung
 
 #### a. Schulferien
 
@@ -88,7 +108,8 @@ plot_data <- umsatz_ferien %>%
 # Daten plotten
 ggplot(plot_data,
        aes(x = Warengruppe, y = mean, fill = Schulferien)) +
-  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_bar(stat = "identity", 
+           position = position_dodge()) +
   geom_errorbar(
     aes(ymin = mean - ic, ymax = mean + ic),
     width = 0.4,
@@ -99,11 +120,17 @@ ggplot(plot_data,
   ) +
   labs(
     title = "Bäckereitagesumsatz nach Schulferienstatus 2013 - 2019",
-    subtitle = "dargestellt nach Warengruppen mit Konfidenzintervallen") +
-  ylab("durchschnittlicher Umsatz in €/Tag")
+    subtitle = "dargestellt nach Warengruppe mit Konfidenzintervallen") +
+  ylab("durchschnittlicher Umsatz in €/Tag") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5) 
+  )
 
 
 ```
+<br>
 
 #### b. Bewölkung
 
@@ -147,24 +174,34 @@ plot_data2 <- umsatz_wetter %>%
   mutate(se = sd / sqrt(n))  %>%
   mutate(ic = se * qt((1 - 0.05) / 2 + .5, n - 1))
 
+mycols_bewoelkung <- c("#97c9ff","#4887cb","#2962a0","#114072","#0a014f")
 # Daten plotten
 ggplot(plot_data2,
        aes(x = Warengruppe, y = mean, fill = Bewoelkungsgrad)) +
-  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_bar(stat = "identity", 
+           position = position_dodge()) +
+  scale_fill_manual(values = mycols_bewoelkung) +
   geom_errorbar(
     aes(ymin = mean - ic, ymax = mean + ic),
     width = 0.4,
     colour = "black",
-    alpha = 0.9,
     size = 0.5,
     position = position_dodge(0.9)
   ) +
   labs(title = "Bäckereitagesumsatz nach Bewölkungsgrad, 2013 - 2019",
-       subtitle = "dargestellt nach Warengruppen mit Konfidenzintervallen") +
-  ylab("durchschnittlicher Umsatz in €/Tag")
+       subtitle = "dargestellt nach Warengruppe mit Konfidenzintervallen") +
+  ylab("durchschnittlicher Umsatz in €/Tag") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5) 
+  )
+
 
 
 ```
+
+<br>
 
 #### c. Wochentag
 
@@ -190,10 +227,13 @@ plot_data3 <- umsatz_W %>%
 
 plot_data3$Wochentag <- factor(plot_data3$Wochentag, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
 
+mycols_wochentage <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
 # Daten plotten
 ggplot(plot_data3,
        aes(x = Warengruppe, y = mean, fill = Wochentag)) +
   geom_bar(stat = "identity", position = position_dodge()) +
+  scale_fill_manual(values = mycols_wochentage) +
   geom_errorbar(
     aes(ymin = mean - ic, ymax = mean + ic),
     width = 0.4,
@@ -203,11 +243,21 @@ ggplot(plot_data3,
     position = position_dodge(0.9)
   ) +
   labs(title = "Bäckereitagesumsatz nach Wochentag, 2013 - 2019",
-       subtitle = "dargestellt nach Warengruppen mit Konfidenzintervallen") +
-  ylab("durchschnittlicher Umsatz in €/Tag")
-```
+       subtitle = "dargestellt nach Warengruppe mit Konfidenzintervallen") +
+  ylab("durchschnittlicher Umsatz in €/Tag") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5)
+  )
 
-## 3. Optimierung des neuronalen Netztes
+```
+<br>
+<br>
+
+## 2. Optimierung des neuronalen Netztes
+
+<br>
 
 -   Hyperparameter:
     -   Anzahl der Knoten im Hidden Layer
@@ -219,9 +269,11 @@ ggplot(plot_data3,
     -   Datenform von bestimmten Variablen verändert / angepasst
     -   Erstellung synthetischer Daten
 
+<br>
+
 ### Hyperparameter
 
-#### Aufstellung des Modells
+#### a. Aufstellung des Modells
 
 ```{r include = FALSE}
 #### Features & Labels 
@@ -253,7 +305,7 @@ trainValidData <- allData_dummy
 load("Datenaufbereitung_Testdaten.Rda")
 testData <- testDatenSatz
 
-load("synthpop_allData_dummy.Rda")
+load("projectSynthpopData_dummy.Rda")
 synthpopData <- synthpop_allData_dummy
 
 # Setting the random counter to a fixed value, so the random initialization stays the same (the random split is always the same)
@@ -305,7 +357,9 @@ model = Sequential([
 
 ```
 
-#### Schätzung des neuronalen Netzes
+<br>
+
+#### b. Schätzung des neuronalen Netzes
 
 ```{python}
 # definition of the loss function and the optimazation function with hyperparameters
@@ -318,7 +372,9 @@ history = model.fit(r.training_features, r.training_labels, epochs=300,
 model.save("python_model.h5")
 ```
 
-#### Graphische Ausgabe der Modelloptimierung
+<br>
+
+#### c. Graphische Ausgabe der Modelloptimierung
 
 ```{r echo = FALSE}
 # Graphische Ausgabe der Modelloptimierung
@@ -346,10 +402,17 @@ ggplot(data[-(1:10),]) +
   )) +
   labs(title = "Loss Function Values During Optimazation") +
   xlab("Iteration Number") +
-  ylab("MAPE")
+  ylab("MAPE") +
+  theme_bw()+
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+
 ```
 
-#### Grafischer vergleich der vorhergesagten & tatsächlicher Preise für die Trainings- und Validierungsdaten
+<br>
+
+#### d. Grafischer Vergleich der vorhergesagten & tatsächlicher Preise für die Trainings- und Validierungsdaten
 
 ```{r echo=FALSE}
 # Schätzung der (normierten) Preise für die Trainings- und Testdaten
@@ -399,7 +462,12 @@ ggplot(data_val2) +
   scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
   labs(title="Predicted and Actual Values for the Validation Data 2") +
   xlab("Case Number") +
-  ylab("Price in EUR")
+  ylab("Price in EUR") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+
 
 #------------------------- 3 -------------------------#
 
@@ -412,10 +480,18 @@ ggplot(data_val3) +
   scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
   labs(title="Predicted and Actual Values for the Validation Data 3") +
   xlab("Case Number") +
-  ylab("Price in EUR")
+  ylab("Price in EUR") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+
 ```
+
+<br>
+
 ### Synthetische Daten 
-#### Dokumentation der Package "synthpop"
+#### Dokumentation des Package "synthpop"
 ![Scan me!](/Users/armandocriscuolo/Desktop/Bildschirm­foto 2023-01-16 um 19.40.33.png)
 Link: https://cran.r-project.org/web/packages/synthpop/synthpop.pdf
 
@@ -434,11 +510,14 @@ realDataN <- realDataN %>% arrange(Datum)
 synthpopDataN <- synthpopDataN %>% arrange(Datum)
 ```
 
+<br>
+
 #### Reale Daten
 
 ```{r echo=FALSE}
 realDataN[c(1:10),]
 ```
+<br>
 
 #### Synthetische Daten
 
@@ -446,7 +525,12 @@ realDataN[c(1:10),]
 synthpopDataN[c(1:10),]
 ```
 
-## 4. Evaluationsergebnis für den Zeitraum vom 09.06. - 30.07.2019
+<br>
+
+## 3. Evaluationsergebnis für den Zeitraum 09.06. - 30.07.2019
+
+<br>
+
 
 ```{r echo=FALSE}
 testing_predictions2 <- as.data.frame(py$model$predict(testing_features))
@@ -476,3 +560,42 @@ r <- POST("https://bakery-sales-mape-tolicqztoq-ey.a.run.app/",
 MAPE <- content(r, "parsed", "application/json", show_col_types = FALSE)
 cat(paste0("Realer MAPE: ", MAPE))
 ```
+<br>
+
+## 4. Umsatzvorhersage für den 09.06.2019
+
+<br>
+
+```{r echo=FALSE}
+umsatz9619 <- as.data.frame(testing_predictions[1, ],
+                            row.names = c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen"))
+
+umsatz9619 <- rownames_to_column(umsatz9619, var = "Warengruppe")
+
+umsatz9619 <- umsatz9619 %>%
+  rename(Umsatzvorhersage = `testing_predictions[1, ]`)
+
+umsatz9619$Umsatzvorhersage <- round(umsatz9619$Umsatzvorhersage, 2)
+
+mycols <- c("#36213E", "#D5573B", "#15B097", "#DDB967", "#086788")
+
+ggplot(umsatz9619, aes(x = Warengruppe, y = Umsatzvorhersage)) +
+  geom_bar(stat = "identity", 
+           fill = mycols) +
+  geom_text(aes(label = Umsatzvorhersage),
+            position = position_dodge(width = 1),
+            vjust = 1.5, size = 3.5,
+            color = "white") +
+  labs(
+    title = "Umsatzvorhersage für Sonntag den 09. Juni 2019", 
+  ) +
+  ylab("Umsatzvorhersage in €") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5) 
+  )
+
+
+
+```
+
