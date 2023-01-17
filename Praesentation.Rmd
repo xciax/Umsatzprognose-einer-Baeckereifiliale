@@ -1,18 +1,33 @@
 ---
-title: "Projektpräsentation"
-subtitle: "Umsatzvorhersage für eine Bäckereifiliale in Kiel durch maschinelles Lernen"
-author: <i> Armando Criscuolo und Clara Urban </i>
+title: "<b> Projektpräsentation </b> <br> Umsatzvorhersage für eine Bäckereifiliale in Kiel durch maschinelles Lernen"
+author: <i> von Armando Criscuolo und Clara Urban </i>
 output:
+  pdf_document: default
   html_notebook: 
     theme: cosmo
-  pdf_document: default
 ---
 
 
 ```{css, echo = FALSE}
 
-h1, h2 {
+h1 {
   text-align: center;
+  padding: 50px;
+  color: white;
+  background-color: #337357;
+}
+
+
+h2 {
+  text-align: center;
+  background-color: #DDDDDD;
+  padding: 10px;
+}
+
+h3 {
+  text-align: center;
+  background-color: #CADBC8;
+  padding: 7.5px;
 }
 
 ```
@@ -42,13 +57,11 @@ for (pkg in pkgs) {
 
 ## 1. Datenaufbereitung
 
-<br>
-
 ### Erstellte Variablen
 
 -   Schulferien Schleswig-Holstein
 -   Umsatz im Facheinzelhandel mit Nahrungsmitteln in Schleswig-Holstein
--   Kieler Woche (muss das hier rein?)
+-   Kieler Woche
 -   Wochentag
 -   Tag des Monats
 -   Monat
@@ -61,7 +74,7 @@ for (pkg in pkgs) {
 
 <br>
 
-#### EXKURS: Datensatzsuche mit Google
+#### Datensatzsuche mit Google
 ![Scan me!](/Users/armandocriscuolo/Desktop/Bildschirm­foto 2023-01-16 um 17.36.38.png)
 Link: https://datasetsearch.research.google.com
 
