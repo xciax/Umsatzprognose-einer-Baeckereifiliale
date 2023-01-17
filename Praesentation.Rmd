@@ -2,9 +2,9 @@
 title: "<b> Projektpräsentation </b> <br> Umsatzvorhersage für eine Bäckereifiliale in Kiel durch maschinelles Lernen"
 author: <i> von Armando Criscuolo und Clara Urban </i>
 output:
-  pdf_document: default
   html_notebook: 
     theme: cosmo
+  pdf_document: default
 ---
 
 
@@ -30,6 +30,16 @@ h3 {
   padding: 7.5px;
 }
 
+h4 {
+  font-size: 24px;
+}
+
+.QR {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 ```
 
 
@@ -38,9 +48,11 @@ remove(list = ls())
 # Create list with needed libraries
 # Quellen:
 #   1. synthpop: https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
-#   2. 
-pkgs <- c("lubridate", "stringr","tidyverse", "readr", 
-          "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM", "synthpop", "httr", "rmarkdown")
+#   2.
+pkgs <- c(
+  "lubridate", "stringr", "tidyverse", "readr",
+  "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM", "synthpop", "httr", "rmarkdown"
+)
 
 # Load each listed library and check if it is installed and install if necessary
 for (pkg in pkgs) {
@@ -49,8 +61,6 @@ for (pkg in pkgs) {
     library(pkg, character.only = TRUE)
   }
 }
-
-
 ```
 
 <br>
@@ -75,8 +85,13 @@ for (pkg in pkgs) {
 <br>
 
 #### Datensatzsuche mit Google
-![Scan me!](/Users/armandocriscuolo/Desktop/Bildschirm­foto 2023-01-16 um 17.36.38.png)
-Link: https://datasetsearch.research.google.com
+<br>
+
+<div class="QR"> 
+  ![Scan me!](/Users/armandocriscuolo/Desktop/Bildschirm­foto 2023-01-16 um 17.36.38.png)
+  <br> 
+  Link: https://datasetsearch.research.google.com
+</div>
 
 <br>
 
@@ -85,7 +100,7 @@ Link: https://datasetsearch.research.google.com
 #### a. Schulferien
 
 ```{r echo = FALSE}
-# Schulferien 
+# Schulferien
 
 load("schulferien.Rda")
 load("pj_umsatz.Rda")
@@ -94,7 +109,7 @@ umsatz <- pj_umsatz
 
 # Daten zusammenführen
 umsatz_ferien <-
-  merge(umsatz, schulferien, by="Datum", all.x = TRUE)
+  merge(umsatz, schulferien, by = "Datum", all.x = TRUE)
 
 umsatz_ferien$Konditorei_imp <- NULL
 umsatz_ferien$Saisonbrot <- NULL
@@ -115,14 +130,18 @@ plot_data <- umsatz_ferien %>%
     sd = sd(Umsatz),
     .groups = "drop"
   ) %>%
-  mutate(se = sd / sqrt(n))  %>%
+  mutate(se = sd / sqrt(n)) %>%
   mutate(ic = se * qt((1 - 0.05) / 2 + .5, n - 1))
 
 # Daten plotten
-ggplot(plot_data,
-       aes(x = Warengruppe, y = mean, fill = Schulferien)) +
-  geom_bar(stat = "identity", 
-           position = position_dodge()) +
+ggplot(
+  plot_data,
+  aes(x = Warengruppe, y = mean, fill = Schulferien)
+) +
+  geom_bar(
+    stat = "identity",
+    position = position_dodge()
+  ) +
   geom_errorbar(
     aes(ymin = mean - ic, ymax = mean + ic),
     width = 0.4,
@@ -133,22 +152,21 @@ ggplot(plot_data,
   ) +
   labs(
     title = "Bäckereitagesumsatz nach Schulferienstatus 2013 - 2019",
-    subtitle = "dargestellt nach Warengruppe mit Konfidenzintervallen") +
+    subtitle = "dargestellt nach Warengruppe mit Konfidenzintervallen"
+  ) +
   ylab("durchschnittlicher Umsatz in €/Tag") +
   theme_bw() +
   theme(
     plot.title = element_text(hjust = 0.5),
-    plot.subtitle = element_text(hjust = 0.5) 
+    plot.subtitle = element_text(hjust = 0.5)
   )
-
-
 ```
 <br>
 
 #### b. Bewölkung
 
 ```{r echo = FALSE}
-# Schulferien 
+# Schulferien
 
 load("wetter.Rda")
 wetter <- pj_wetter
@@ -174,7 +192,8 @@ umsatz_wetter <- umsatz_wetter %>%
 # factor levels für die Bewölkung
 umsatz_wetter$Bewoelkungsgrad <-
   factor(umsatz_wetter$Bewoelkungsgrad,
-         levels = c("keine", "gering", "mittel", "stark"))
+    levels = c("keine", "gering", "mittel", "stark")
+  )
 # Mean und Konfidenzintervalle berechnen
 plot_data2 <- umsatz_wetter %>%
   group_by(Warengruppe, Bewoelkungsgrad) %>%
@@ -184,15 +203,19 @@ plot_data2 <- umsatz_wetter %>%
     sd = sd(Umsatz),
     .groups = "drop"
   ) %>%
-  mutate(se = sd / sqrt(n))  %>%
+  mutate(se = sd / sqrt(n)) %>%
   mutate(ic = se * qt((1 - 0.05) / 2 + .5, n - 1))
 
-mycols_bewoelkung <- c("#97c9ff","#4887cb","#2962a0","#114072","#0a014f")
+mycols_bewoelkung <- c("#97c9ff", "#4887cb", "#2962a0", "#114072", "#0a014f")
 # Daten plotten
-ggplot(plot_data2,
-       aes(x = Warengruppe, y = mean, fill = Bewoelkungsgrad)) +
-  geom_bar(stat = "identity", 
-           position = position_dodge()) +
+ggplot(
+  plot_data2,
+  aes(x = Warengruppe, y = mean, fill = Bewoelkungsgrad)
+) +
+  geom_bar(
+    stat = "identity",
+    position = position_dodge()
+  ) +
   scale_fill_manual(values = mycols_bewoelkung) +
   geom_errorbar(
     aes(ymin = mean - ic, ymax = mean + ic),
@@ -201,17 +224,16 @@ ggplot(plot_data2,
     size = 0.5,
     position = position_dodge(0.9)
   ) +
-  labs(title = "Bäckereitagesumsatz nach Bewölkungsgrad, 2013 - 2019",
-       subtitle = "dargestellt nach Warengruppe mit Konfidenzintervallen") +
+  labs(
+    title = "Bäckereitagesumsatz nach Bewölkungsgrad, 2013 - 2019",
+    subtitle = "dargestellt nach Warengruppe mit Konfidenzintervallen"
+  ) +
   ylab("durchschnittlicher Umsatz in €/Tag") +
   theme_bw() +
   theme(
     plot.title = element_text(hjust = 0.5),
-    plot.subtitle = element_text(hjust = 0.5) 
+    plot.subtitle = element_text(hjust = 0.5)
   )
-
-
-
 ```
 
 <br>
@@ -235,7 +257,7 @@ plot_data3 <- umsatz_W %>%
     sd = sd(Umsatz),
     .groups = "drop"
   ) %>%
-  mutate(se = sd / sqrt(n))  %>%
+  mutate(se = sd / sqrt(n)) %>%
   mutate(ic = se * qt((1 - 0.05) / 2 + .5, n - 1))
 
 plot_data3$Wochentag <- factor(plot_data3$Wochentag, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
@@ -243,8 +265,10 @@ plot_data3$Wochentag <- factor(plot_data3$Wochentag, levels = c("Monday", "Tuesd
 mycols_wochentage <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 # Daten plotten
-ggplot(plot_data3,
-       aes(x = Warengruppe, y = mean, fill = Wochentag)) +
+ggplot(
+  plot_data3,
+  aes(x = Warengruppe, y = mean, fill = Wochentag)
+) +
   geom_bar(stat = "identity", position = position_dodge()) +
   scale_fill_manual(values = mycols_wochentage) +
   geom_errorbar(
@@ -255,15 +279,16 @@ ggplot(plot_data3,
     size = 0.5,
     position = position_dodge(0.9)
   ) +
-  labs(title = "Bäckereitagesumsatz nach Wochentag, 2013 - 2019",
-       subtitle = "dargestellt nach Warengruppe mit Konfidenzintervallen") +
+  labs(
+    title = "Bäckereitagesumsatz nach Wochentag, 2013 - 2019",
+    subtitle = "dargestellt nach Warengruppe mit Konfidenzintervallen"
+  ) +
   ylab("durchschnittlicher Umsatz in €/Tag") +
   theme_bw() +
   theme(
     plot.title = element_text(hjust = 0.5),
     plot.subtitle = element_text(hjust = 0.5)
   )
-
 ```
 <br>
 <br>
@@ -289,21 +314,22 @@ ggplot(plot_data3,
 #### a. Aufstellung des Modells
 
 ```{r include = FALSE}
-#### Features & Labels 
+#### Features & Labels
 
-features <- c("day",                           "month",                         "year",
-              "Windstaerke",                   "Temperatur",                    "WC_Bewölkung_abnehmend",
-              "WC_Bewölkung_gleichbleibend",   "WC_Bewölkung_nicht_beobachtet", "WC_Bewölkung_zunehmend",
-              "WC_Dunst_Staub",                "WC_Ereignisse_letzte_h",        "WC_Gewitter",
-              "WC_Nebel_Eisnebel",             "WC_Regen",                      "WC_Schauer",
-              "WC_Schnee",                     "WC_Sprühregen",                 "WC_Trockenereignisse",
-              "WC_NA",                         "Bewoelkungsgrad_gering",        "Bewoelkungsgrad_keine",
-              "Bewoelkungsgrad_mittel",        "Bewoelkungsgrad_stark",         "Bewoelkungsgrad_NA",
-              "Schulferien",                   "KielerWoche",                   "Wochentag_Tuesday",
-              "Wochentag_Thursday",            "Saisonbrot",                    "UmsatzFEH",
-              "Wochentag_Friday",              "Wochentag_Wednesday",           "Wochentag_Monday",
-              "Wochentag_Saturday",            "Wochentag_Sunday"
-              )
+features <- c(
+  "day", "month", "year",
+  "Windstaerke", "Temperatur", "WC_Bewölkung_abnehmend",
+  "WC_Bewölkung_gleichbleibend", "WC_Bewölkung_nicht_beobachtet", "WC_Bewölkung_zunehmend",
+  "WC_Dunst_Staub", "WC_Ereignisse_letzte_h", "WC_Gewitter",
+  "WC_Nebel_Eisnebel", "WC_Regen", "WC_Schauer",
+  "WC_Schnee", "WC_Sprühregen", "WC_Trockenereignisse",
+  "WC_NA", "Bewoelkungsgrad_gering", "Bewoelkungsgrad_keine",
+  "Bewoelkungsgrad_mittel", "Bewoelkungsgrad_stark", "Bewoelkungsgrad_NA",
+  "Schulferien", "KielerWoche", "Wochentag_Tuesday",
+  "Wochentag_Thursday", "Saisonbrot", "UmsatzFEH",
+  "Wochentag_Friday", "Wochentag_Wednesday", "Wochentag_Monday",
+  "Wochentag_Saturday", "Wochentag_Sunday"
+)
 
 labels <- c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen")
 ```
@@ -335,15 +361,14 @@ assignment <-
 trainValidData2 <-
   rbind(trainValidData[assignment == 1, ], synthpopData)
 
-training_features <- trainValidData2[, features] 
-training_labels <- trainValidData2[, labels] 
+training_features <- trainValidData2[, features]
+training_labels <- trainValidData2[, labels]
 
 validation_features <- trainValidData[assignment == 2, features]
 validation_labels <- trainValidData[assignment == 2, labels]
 
-testing_features <- testData %>% 
+testing_features <- testData %>%
   select(all_of(features))
-
 ```
 
 ```{python include = FALSE}
@@ -392,13 +417,13 @@ model.save("python_model.h5")
 ```{r echo = FALSE}
 # Graphische Ausgabe der Modelloptimierung
 
-#create data
+# create data
 data <- data.frame(
   val_loss = unlist(py$history$history$val_loss),
   loss = unlist(py$history$history$loss)
 )
 
-ggplot(data[-(1:10),]) +
+ggplot(data[-(1:10), ]) +
   geom_line(aes(
     x = 1:length(val_loss),
     y = val_loss,
@@ -416,11 +441,10 @@ ggplot(data[-(1:10),]) +
   labs(title = "Loss Function Values During Optimazation") +
   xlab("Iteration Number") +
   ylab("MAPE") +
-  theme_bw()+
+  theme_bw() +
   theme(
     plot.title = element_text(hjust = 0.5)
   )
-
 ```
 
 <br>
@@ -434,11 +458,11 @@ validation_predictions <- py$model$predict(validation_features)
 testing_predictions <- py$model$predict(testing_features)
 
 # Vergleich der Gütekriterien für die Traingings- und Testdaten
-a <- format(mape(training_labels[,1], training_predictions[,1])*100, digits=3, nsmall=2)
-b <- format(mape(training_labels[,2], training_predictions[,2])*100, digits=3, nsmall=2)
-c <- format(mape(training_labels[,3], training_predictions[,3])*100, digits=3, nsmall=2)
-d <- format(mape(training_labels[,4], training_predictions[,4])*100, digits=3, nsmall=2)
-e <- format(mape(training_labels[,5], training_predictions[,5])*100, digits=3, nsmall=2)
+a <- format(mape(training_labels[, 1], training_predictions[, 1]) * 100, digits = 3, nsmall = 2)
+b <- format(mape(training_labels[, 2], training_predictions[, 2]) * 100, digits = 3, nsmall = 2)
+c <- format(mape(training_labels[, 3], training_predictions[, 3]) * 100, digits = 3, nsmall = 2)
+d <- format(mape(training_labels[, 4], training_predictions[, 4]) * 100, digits = 3, nsmall = 2)
+e <- format(mape(training_labels[, 5], training_predictions[, 5]) * 100, digits = 3, nsmall = 2)
 
 cat(paste0("\nMAPE Warengruppe 1:\t", a))
 cat(paste0("\nMAPE Warengruppe 2:\t", b))
@@ -446,12 +470,12 @@ cat(paste0("\nMAPE Warengruppe 3:\t", c))
 cat(paste0("\nMAPE Warengruppe 4:\t", d))
 cat(paste0("\nMAPE Warengruppe 5:\t", e, "\n"))
 
-g <- format(mape(validation_labels[,1], validation_predictions[,1])*100, digits=3, nsmall=2)
-h <- format(mape(validation_labels[,2], validation_predictions[,2])*100, digits=3, nsmall=2)
-i <- format(mape(validation_labels[,3], validation_predictions[,3])*100, digits=3, nsmall=2)
-j <- format(mape(validation_labels[,4], validation_predictions[,4])*100, digits=3, nsmall=2)
-k <- format(mape(validation_labels[,5], validation_predictions[,5])*100, digits=3, nsmall=2)
-  
+g <- format(mape(validation_labels[, 1], validation_predictions[, 1]) * 100, digits = 3, nsmall = 2)
+h <- format(mape(validation_labels[, 2], validation_predictions[, 2]) * 100, digits = 3, nsmall = 2)
+i <- format(mape(validation_labels[, 3], validation_predictions[, 3]) * 100, digits = 3, nsmall = 2)
+j <- format(mape(validation_labels[, 4], validation_predictions[, 4]) * 100, digits = 3, nsmall = 2)
+k <- format(mape(validation_labels[, 5], validation_predictions[, 5]) * 100, digits = 3, nsmall = 2)
+
 cat(paste0("\nMAPE Warengruppe 1:\t", g))
 cat(paste0("\nMAPE Warengruppe 2:\t", h))
 cat(paste0("\nMAPE Warengruppe 3:\t", i))
@@ -459,21 +483,21 @@ cat(paste0("\nMAPE Warengruppe 4:\t", j))
 cat(paste0("\nMAPE Warengruppe 5:\t", k, "\n"))
 
 # Mean of Training and Validation Data MAPE
-meanT <- c(as.double(a), as.double(b), as.double(c), as.double(d), as.double(e)) 
-meanV <- c(as.double(g), as.double(h), as.double(i), as.double(j), as.double(k)) 
+meanT <- c(as.double(a), as.double(b), as.double(c), as.double(d), as.double(e))
+meanV <- c(as.double(g), as.double(h), as.double(i), as.double(j), as.double(k))
 
 cat(paste0("\nMean Training MAPE: ", mean(meanT), "\n"))
 cat(paste0("Mean Validation MAPE: ", mean(meanV), "\n"))
 
-data_val2 <- data.frame(prediction = validation_predictions[,2], actual = validation_labels[,2])
-data_test2 <- data.frame(prediction = testing_predictions[,2])
+data_val2 <- data.frame(prediction = validation_predictions[, 2], actual = validation_labels[, 2])
+data_test2 <- data.frame(prediction = testing_predictions[, 2])
 
 # Plot der Ergebnisse der Validierungsdaten
 ggplot(data_val2) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Validation Data 2") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
+  labs(title = "Predicted and Actual Values for the Validation Data 2") +
   xlab("Case Number") +
   ylab("Price in EUR") +
   theme_bw() +
@@ -484,29 +508,34 @@ ggplot(data_val2) +
 
 #------------------------- 3 -------------------------#
 
-data_val3 <- data.frame(prediction = validation_predictions[,3], actual = validation_labels[,3])
+data_val3 <- data.frame(prediction = validation_predictions[, 3], actual = validation_labels[, 3])
 
 # Plot der Ergebnisse der Validierungsdaten
 ggplot(data_val3) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Validation Data 3") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
+  labs(title = "Predicted and Actual Values for the Validation Data 3") +
   xlab("Case Number") +
   ylab("Price in EUR") +
   theme_bw() +
   theme(
     plot.title = element_text(hjust = 0.5)
   )
-
 ```
 
 <br>
 
 ### Synthetische Daten 
+
+<br>
+
 #### Dokumentation des Package "synthpop"
+<div class="QR">
 ![Scan me!](/Users/armandocriscuolo/Desktop/Bildschirm­foto 2023-01-16 um 19.40.33.png)
+<br>
 Link: https://cran.r-project.org/web/packages/synthpop/synthpop.pdf
+</div>
 
 ```{r echo=FALSE}
 load("projectData_dummy_D.Rda")
@@ -528,14 +557,14 @@ synthpopDataN <- synthpopDataN %>% arrange(Datum)
 #### Reale Daten
 
 ```{r echo=FALSE}
-realDataN[c(1:10),]
+realDataN[c(1:10), ]
 ```
 <br>
 
 #### Synthetische Daten
 
 ```{r echo=FALSE}
-synthpopDataN[c(1:10),]
+synthpopDataN[c(1:10), ]
 ```
 
 <br>
@@ -553,22 +582,23 @@ colnames(testing_predictions2) <- c("1", "2", "3", "4", "5")
 dates <- seq(as.Date("2019-06-09"), as.Date("2019-07-30"), by = "day")
 # Add the dates as a new column to your data frame
 testing_predictions2$Datum <- dates
-testing_predictions2 <- pivot_longer(testing_predictions2, cols = c("1","2", "3", "4", "5"), names_to = "Warengruppe", values_to = "Umsatz")
+testing_predictions2 <- pivot_longer(testing_predictions2, cols = c("1", "2", "3", "4", "5"), names_to = "Warengruppe", values_to = "Umsatz")
 
 testing_predictions2$Warengruppe <- as.numeric(testing_predictions2$Warengruppe)
-testing_predictions2 <- testing_predictions2[order(testing_predictions2$Warengruppe),]
-#testing_predictions2$Umsatz <- as.integer(testing_predictions2$Umsatz)
+testing_predictions2 <- testing_predictions2[order(testing_predictions2$Warengruppe), ]
+# testing_predictions2$Umsatz <- as.integer(testing_predictions2$Umsatz)
 testing_predictions2 <- testing_predictions2 %>% filter(Datum != "2019-07-10")
 
 write.csv(testing_predictions2, "predictions.csv", row.names = FALSE, quote = FALSE)
 predictions <- read_csv("predictions.csv")
-  
+
 name <- "Gruppe 2"
 # Execution of the request
-r <- POST("https://bakery-sales-mape-tolicqztoq-ey.a.run.app/", 
-          body = list(name=name, predictions=predictions),
-          encode = "json",
-          show_col_types = FALSE)
+r <- POST("https://bakery-sales-mape-tolicqztoq-ey.a.run.app/",
+  body = list(name = name, predictions = predictions),
+  encode = "json",
+  show_col_types = FALSE
+)
 # Output of MAPE in Percent
 MAPE <- content(r, "parsed", "application/json", show_col_types = FALSE)
 cat(paste0("Realer MAPE: ", MAPE))
@@ -581,7 +611,8 @@ cat(paste0("Realer MAPE: ", MAPE))
 
 ```{r echo=FALSE}
 umsatz9619 <- as.data.frame(testing_predictions[1, ],
-                            row.names = c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen"))
+  row.names = c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen")
+)
 
 umsatz9619 <- rownames_to_column(umsatz9619, var = "Warengruppe")
 
@@ -593,22 +624,21 @@ umsatz9619$Umsatzvorhersage <- round(umsatz9619$Umsatzvorhersage, 2)
 mycols <- c("#36213E", "#D5573B", "#15B097", "#DDB967", "#086788")
 
 ggplot(umsatz9619, aes(x = Warengruppe, y = Umsatzvorhersage)) +
-  geom_bar(stat = "identity", 
-           fill = mycols) +
+  geom_bar(
+    stat = "identity",
+    fill = mycols
+  ) +
   geom_text(aes(label = Umsatzvorhersage),
-            position = position_dodge(width = 1),
-            vjust = 1.5, size = 3.5,
-            color = "white") +
+    position = position_dodge(width = 1),
+    vjust = 1.5, size = 3.5,
+    color = "white"
+  ) +
   labs(
-    title = "Umsatzvorhersage für Sonntag den 09. Juni 2019", 
+    title = "Umsatzvorhersage für Sonntag den 09. Juni 2019",
   ) +
   ylab("Umsatzvorhersage in €") +
   theme_bw() +
   theme(
-    plot.title = element_text(hjust = 0.5) 
+    plot.title = element_text(hjust = 0.5)
   )
-
-
-
 ```
-
