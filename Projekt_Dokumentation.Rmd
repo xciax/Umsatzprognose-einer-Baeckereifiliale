@@ -8,30 +8,32 @@ editor_options:
 
 # Projekt Dokumentation
 
-Aufgabe: Vorhersage der Umsätze vom 9.6.2019 bis 30.07.2019
+## Aufgabe: Vorhersage der Umsätze vom 9.6.2019 bis 30.07.2019
 
-### Infos zu den gegebenen Daten
+#### Infos zu den gegebenen Daten
 
 Warengruppen: \* 1 = Brot \* 2 = Brötchen \* 3 = Croissant \* 4 =
 Konditorei \* 5 = Kuchen \* 6 = Saisonbrot
 
-### Saisonbrot muss nicht vorhergesagt werden! Siehe 'predition_template.csv'.
+#### Saisonbrot muss nicht vorhergesagt werden! Siehe 'predition_template.csv'.
 
 Wetterdaten: \* Mittlerer Bewölkungsgrad am Tag (0 = min, 8 = max) \*
 MIttlere Temperatur in C \* Mittlere Windgeschwindigkeit in m/s \*
 Wettercode (<http://www.seewetter-kiel.de/seewetter/daten_symbole.htm>)
 \* und in der Datei wettercodes.Rda
 
-### Vorbereitung & benötigte Libraries laden
+### Benötigte Libraries laden
 
 ```{r}
 remove(list = ls())
 # Create list with needed libraries
 # Quellen:
 #   1. synthpop: https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
-#   2. 
-pkgs <- c("lubridate", "stringr","tidyverse", "readr", 
-          "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM", "synthpop", "httr")
+#   2.
+pkgs <- c(
+  "lubridate", "stringr", "tidyverse", "readr",
+  "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM", "synthpop", "httr", "styler"
+)
 
 # Load each listed library and check if it is installed and install if necessary
 for (pkg in pkgs) {
@@ -44,21 +46,25 @@ for (pkg in pkgs) {
 
 ### Vorbereitete Datensätze laden
 
-Skripte, in denen die Daten aufbereitet wurden:
--   Wetterdaten  --> "Datenaufbereitung_Wetter.Rmd" 
+Skripte, in denen die Daten aufbereitet wurden, und Namen der fertigen gespeicherten Datensätze:
+-   Wetterdaten  --> "Datenaufbereitung_Wetter.Rmd" -->
 -   Feiertagedaten  --> "Datenaufbereitung_Feiertage.R" 
 -   Schulferien  --> "Datenaufbereitung_Schulferien.R" 
 -   Umsatzdaten  --> "Datenaufbereitung_Umsatz.R" 
--   Umsatzdaten aus dem Facheinzelhandel --> "??" 
+-   Umsatzdaten aus dem Facheinzelhandel --> "Datenaufbereitung_FEH.R" 
+
+
+
 
 ```{r}
-# Lade Daten
+# Daten laden und gegebenenfalls umbenennen
+
 load("pj_wetter_dummy.Rda")
 pj_wetter <- pj_wetter_dummy
-  
+
 load("kiwoDT.Rda")
 pj_kiwo <- kiwoDT
-  
+
 load("pj_umsatz.Rda")
 
 load("schulferien.Rda")
@@ -66,64 +72,67 @@ pj_schulferien <- schulferien
 
 load("umsatzFachEinzelHandelSH.Rda")
 
-# Erste Betrachtung der Daten
-#summary(pj_wetter)
-#summary(pj_kiwo)
-#summary(pj_umsatz)
 ```
 
-### Erstellung des Trainingsdatensatzen 
+### Erstellung des Trainingsdatensatzen ("trainValidData")
 
 ```{r}
+# ----- Zusammenführung der vorbereiteten Datensätze ----- #
+
 # Merge erstellt automatisch die Schnittmenge
 # Der Zusatz all.x = TRUE sorgt dafür, dass keine Zeilen (basierend auf Datensatz x) weggelöscht werden
 # Wetterdaten nach Datum hinzufügen
-pj_umsatz_wetter <- merge(pj_umsatz, pj_wetter, by="Datum", all.x = TRUE)
+pj_umsatz_wetter <- merge(pj_umsatz, pj_wetter, by = "Datum", all.x = TRUE)
 
 # Schulferien nach Datum hinzufügen
-pj_umsatz_wetter_ferien <- merge(pj_umsatz_wetter, pj_schulferien, by="Datum", all.x = TRUE)
+pj_umsatz_wetter_ferien <- merge(pj_umsatz_wetter, pj_schulferien, by = "Datum", all.x = TRUE)
 
 # KiWo nach Datum hinzufügen
-allData <- merge(pj_umsatz_wetter_ferien, pj_kiwo, by="Datum", all.x = TRUE)
+allData <- merge(pj_umsatz_wetter_ferien, pj_kiwo, by = "Datum", all.x = TRUE)
 
-allData <- merge(allData, umsatzFachEinzelHandelSH, by="Datum", all.x = TRUE)
+# Umsatz aus Facheinzelhandel in SH hinzufügen
+allData <- merge(allData, umsatzFachEinzelHandelSH, by = "Datum", all.x = TRUE)
 
-# auf fehlende Werte überprüfen:
+
+# ----- auf fehlende Werte überprüfen ----- #
 allData_na <- allData %>%
-  aggr(combined=TRUE, numbers=TRUE)
+  aggr(combined = TRUE, numbers = TRUE)
 
-# Imputation Temperatur und Windstaerke
+# Imputation für Temperatur und Windstaerke 
 # Aktuell: "Datenspende" vom Wert vom Vortag
-# ZIEL: Mittelwert aus Temperatur von Vortag und Tag danach -> Armando! :)
-allData <- allData %>%  
-  hotdeck(variable = c("Temperatur", "Windstaerke"),
-          ord_var = "Datum")
+allData <- allData %>%
+  hotdeck(
+    variable = c("Temperatur", "Windstaerke"),
+    ord_var = "Datum"
+  )
 
-#imputierte Werte graphisch überprüfen:
+# imputierte Werte graphisch überprüfen:
 ggplot(allData) +
   geom_point(aes(x = Datum, y = Temperatur, color = Temperatur_imp))
 ggplot(allData) +
   geom_point(aes(x = Datum, y = Windstaerke, color = Windstaerke_imp))
 
+# Weitere NA behandeln 
 # NA Wettercodes zu 0, da Spalte WC_NA angibt, wo Wettercodes gefehlt haben
 # Spalten 12 -24
 
 # das gleiche gilt bei der Bewölkung
 # Spalten 26 - 29
 
-# weitere NA mit 0 füllen, dort wo es Sinn ergibt  
+# weitere NA mit 0 füllen, dort wo es Sinn ergibt: KiWO, Schulferien
 
 allData <- allData %>%
-    mutate_at(c(12:34), ~replace(., is.na(.), 0))
+  mutate_at(c(12:34), ~ replace(., is.na(.), 0))
 
-# generating synthetic data 
+# -----  synthetische Daten generieren  ----- #
 synthpop_allData <- syn(allData)[["syn"]]
 
-
-# dummy coding der Wochentage
+## ----- Umformung des Datensatzes, sodass dieser ans Modell übergeben werden kann ----- #
+# dummy coding der Wochentage in realen und synthetischen Daten
 allData_dummy <- dummy_cols(allData, select_columns = "Wochentag")
 synthpop_allData_dummy <- dummy_cols(synthpop_allData, select_columns = "Wochentag")
 
+# Jahr, Monat und Tag aus Monat als einzelne Variablen mit einfügen (reale und syn data)
 allData_dummy$year <- year(allData_dummy$Datum)
 allData_dummy$month <- month(allData_dummy$Datum)
 allData_dummy$day <- day(allData_dummy$Datum)
@@ -131,87 +140,107 @@ synthpop_allData_dummy$year <- year(synthpop_allData_dummy$Datum)
 synthpop_allData_dummy$month <- month(synthpop_allData_dummy$Datum)
 synthpop_allData_dummy$day <- day(synthpop_allData_dummy$Datum)
 
-save(allData_dummy, file="projectData_dummy_D.Rda")
-
+# Datensätze mit Datum abspeichern
+save(allData_dummy, file = "projectData_dummy_D.Rda")
 save(synthpop_allData_dummy, file = "projectSynthpopData_dummy_D.Rda")
 
+# Spalte mit Datum für die weitere Nutzung entfernen
 allData_dummy$Datum <- NULL
 synthpop_allData_dummy$Datum <- NULL
 
-#summary(allData_dummy)
-save(allData_dummy, file="projectData_dummy.Rda")
+# fertigen Datensätze speichern 
+save(allData_dummy, file = "projectData_dummy.Rda")
 save(synthpop_allData_dummy, file = "projectSynthpopData_dummy.Rda")
+
+trainValidData <- allData_dummy
+synTrainValidData <- synthpop_allData_dummy
 
 ```
 
-### Testdatensatz
+### Testdatensatz für den Zeitraum vom 09.06 - 30.07.2019
 
 ```{r}
+# ----- Testdatensatz erstellen, mit allen Variablen außer dem Umsatz, welcher vorhergesagt werden soll  ----- #
+
 # Erstelle einen leeren Dataframe mit einer Spalte für das Datum
 testDatenSatz <- data.frame(Datum = character())
 
 # Erstelle eine Sequenz von Daten im angegebenen Zeitraum
-datum_sequenz <- seq(from = as.Date("2019-06-09"),
-                     to = as.Date("2019-07-30"),
-                     by = "days")
+datum_sequenz <- seq(
+  from = as.Date("2019-06-09"),
+  to = as.Date("2019-07-30"),
+  by = "days"
+)
 
 # Füge die Daten der Sequenz dem Dataframe hinzu
 sBrot <- select(pj_umsatz, "Datum", "Saisonbrot")
 testDatenSatz <- rbind(testDatenSatz, data.frame(Datum = datum_sequenz))
 testDatenSatz$Wochentag <- weekdays(testDatenSatz$Datum)
-testDatenSatz <- merge(testDatenSatz, pj_wetter, by="Datum", all.x = TRUE)
-testDatenSatz <- merge(testDatenSatz, pj_schulferien, by="Datum", all.x = TRUE)
-testDatenSatz <- merge(testDatenSatz, pj_kiwo, by="Datum", all.x = TRUE)
-testDatenSatz <- merge(testDatenSatz, sBrot, by="Datum", all.x = TRUE)
-testDatenSatz <- merge(testDatenSatz, umsatzFachEinzelHandelSH, by="Datum", all.x = TRUE)
+testDatenSatz <- merge(testDatenSatz, pj_wetter, by = "Datum", all.x = TRUE)
+testDatenSatz <- merge(testDatenSatz, pj_schulferien, by = "Datum", all.x = TRUE)
+testDatenSatz <- merge(testDatenSatz, pj_kiwo, by = "Datum", all.x = TRUE)
+testDatenSatz <- merge(testDatenSatz, sBrot, by = "Datum", all.x = TRUE)
+testDatenSatz <- merge(testDatenSatz, umsatzFachEinzelHandelSH, by = "Datum", all.x = TRUE)
 
-testDatenSatz <- testDatenSatz %>% 
-  hotdeck(variable = c("Temperatur", "Windstaerke"),
-          ord_var = "Datum")
+# fehlende Werte in Temperatur und Winstaerke Variable imputieren 
+# -> Wert vom Vortag wird genutzt
+testDatenSatz <- testDatenSatz %>%
+  hotdeck(
+    variable = c("Temperatur", "Windstaerke"),
+    ord_var = "Datum"
+  )
 
-#imputierte Werte von testDatenSatz graphisch überprüfen:
+# imputierte Werte von testDatenSatz graphisch überprüfen:
 ggplot(testDatenSatz) +
   geom_point(aes(x = Datum, y = Temperatur, color = Temperatur_imp))
 ggplot(testDatenSatz) +
   geom_point(aes(x = Datum, y = Windstaerke, color = Windstaerke_imp))
 
+# NAs an sinnvollenstellen ersetzen, gleichermaßen wie im Trainingsdatensatz
 testDatenSatz <- testDatenSatz %>%
-    mutate_at(c(4:26), ~replace(., is.na(.), 0))
+  mutate_at(c(4:26), ~ replace(., is.na(.), 0))
 
 # dummy coding der Wochentage
 testDatenSatz <- dummy_cols(testDatenSatz, select_columns = "Wochentag")
 
+# Datum auseinanderziehen in einzelne Spalten
 testDatenSatz$year <- year(testDatenSatz$Datum)
 testDatenSatz$month <- month(testDatenSatz$Datum)
 testDatenSatz$day <- day(testDatenSatz$Datum)
 
+# Datums SPalte löschen
 testDatenSatz$Datum <- NULL
 testDatenSatz$Wochentag <- NULL
 
+# Testdatensatz überprüfen und speichern
 summary(testDatenSatz)
-save(testDatenSatz, file="Datenaufbereitung_Testdaten.Rda")
+save(testDatenSatz, file = "Datenaufbereitung_Testdaten.Rda")
 ```
+
+## Optimierung des neuronalen Netzes
 
 ### Features & Labels
 
 ```{r}
-features <- c("day",                           "month",                         "year",
-              "Windstaerke",                   "Temperatur",                    "WC_Bewölkung_abnehmend",
-              "WC_Bewölkung_gleichbleibend",   "WC_Bewölkung_nicht_beobachtet", "WC_Bewölkung_zunehmend",
-              "WC_Dunst_Staub",                "WC_Ereignisse_letzte_h",        "WC_Gewitter",
-              "WC_Nebel_Eisnebel",             "WC_Regen",                      "WC_Schauer",
-              "WC_Schnee",                     "WC_Sprühregen",                 "WC_Trockenereignisse",
-              "WC_NA",                         "Bewoelkungsgrad_gering",        "Bewoelkungsgrad_keine",
-              "Bewoelkungsgrad_mittel",        "Bewoelkungsgrad_stark",         "Bewoelkungsgrad_NA",
-              "Schulferien",                   "KielerWoche"                   
-              "Wochentag_Tuesday",
-              "Wochentag_Thursday",            "Saisonbrot",                    "UmsatzFEH",
-              "Wochentag_Friday",              "Wochentag_Wednesday",           "Wochentag_Monday",
-              "Wochentag_Saturday",            "Wochentag_Sunday"
-              )
+features <- c(
+  "day", "month", "year",
+  "Windstaerke", "Temperatur", "WC_Bewölkung_abnehmend",
+  "WC_Bewölkung_gleichbleibend", "WC_Bewölkung_nicht_beobachtet", "WC_Bewölkung_zunehmend",
+  "WC_Dunst_Staub", "WC_Ereignisse_letzte_h", "WC_Gewitter",
+  "WC_Nebel_Eisnebel", "WC_Regen", "WC_Schauer",
+  "WC_Schnee", "WC_Sprühregen", "WC_Trockenereignisse",
+  "WC_NA", "Bewoelkungsgrad_gering", "Bewoelkungsgrad_keine",
+  "Bewoelkungsgrad_mittel", "Bewoelkungsgrad_stark", "Bewoelkungsgrad_NA",
+  "Schulferien", "KielerWoche",
+  "Wochentag_Tuesday",
+  "Wochentag_Thursday", "Saisonbrot", "UmsatzFEH",
+  "Wochentag_Friday", "Wochentag_Wednesday", "Wochentag_Monday",
+  "Wochentag_Saturday", "Wochentag_Sunday"
+)
 
 labels <- c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen")
 ```
+
 
 ### Selection of Training, Validation and Test Data
 
@@ -219,34 +248,46 @@ labels <- c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen")
 # Setting the random counter to a fixed value, so the random initialization stays the same (the random split is always the same)
 set.seed(1)
 
-assignment <- sample(1:3, size = nrow(allData_dummy), prob = c(.7, .2, .1), replace = TRUE)
-allData_dummy2 <- rbind(allData_dummy[assignment == 1,], synthpop_allData_dummy)
+# Daten in random Gruppen zuweisen
+# 80% Trainingsdaten, 20% Validierungsdaten, 10% Testdaten
 
-training_features <- allData_dummy2[,features]  
-training_labels <- allData_dummy2[,labels]  
+assignment <-
+  sample(
+    1:2,
+    size = nrow(trainValidData),
+    prob = c(.8, .2),
+    replace = TRUE
+  )
 
-validation_features <- allData_dummy[assignment == 2, features]  
-validation_labels <- allData_dummy[assignment == 2, labels]  
+#  Datensatz mit synthetischen Daten 
+trainValidData2 <-
+  rbind(trainValidData[assignment == 1, ], synTrainValidData)
 
-t_features <- allData_dummy[assignment == 3, features]  
-t_labels <- allData_dummy[assignment == 3, labels] 
+# Datensätze mit Trainigs/validierungs Features und Labels
+training_features <- trainValidData2[, features]
+training_labels <- trainValidData2[, labels]
 
-testing_features <- testDatenSatz %>% 
-  select(all_of(features)) 
+validation_features <- trainValidData[assignment == 2, features]
+validation_labels <- trainValidData[assignment == 2, labels]
 
-#are there any missing values?
+# Testing Features 
+testing_features <- testData %>%
+  select(all_of(features))
+
+# auf fehlende Werte überprüfen
 table(is.na(training_features))
 table(is.na(validation_features))
 table(is.na(testing_features))
-#summary(allData_dummy)
 ```
+
 
 ### Modell aufstellen in Python
 
 ```{python}
+# importiere Python libraries
+
 import numpy as np
 import tensorflow as tf
-
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import InputLayer, Dense, BatchNormalization, Dropout
 from tensorflow.keras.optimizers import Adam
@@ -264,45 +305,53 @@ model = Sequential([
   Dense(len(r.training_features.keys()), activation = 'swish'),
   Dropout(0.2),
   Dense(len(r.training_features.keys()), activation = 'swish'),
+  Dropout(0.2),
+  Dense(len(r.training_features.keys()), activation = 'swish'),
   Dense(5)
 ])
 
-# Ausgabe einer ZUsammenfassung zur Form des MOdells, das geschätzt wird (nicht notwendig)
-#model.summary()
+# Ausgabe einer Zusammenfassung zur Form des MOdells, das geschätzt wird 
+model.summary()
+
 ```
+
 
 ### Schätzung de neuronalen Netzes
 
 ```{python}
-# definition of the loss function and the optimazation function with hyperparameters
+# Definition der Loss Function und der Optimierungsfunktion mit Hyperparametern
 model.compile(loss="mape", optimizer=Adam(learning_rate=0.001))
 
-#Schätzung des Modells
-history = model.fit(r.training_features, r.training_labels, epochs = 300,
-                    validation_data = (r.validation_features, r.validation_labels), verbose = 0)
+# Schätzung des Modells mittels Validierungsdaten
+history = model.fit(r.training_features, r.training_labels, epochs=300,
+                    validation_data = (r.validation_features, r.validation_labels), verbose=0)
 
+# Modell Speichern
 model.save("python_model.h5")
 ```
+
 
 ### graphische Ausgabe der Modelloptimierung
 
 ```{r}
 # Graphische Ausgabe der Modelloptimierung
 
-#create data
-data <- data.frame(val_loss = unlist(py$history$history$val_loss),
-                   loss = unlist(py$history$history$loss))
+# Daten aus Python Modell in R data frame überführen
+data <- data.frame(
+  val_loss = unlist(py$history$history$val_loss),
+  loss = unlist(py$history$history$loss)
+)
 
-ggplot(data[-(1:10), ])+
+# Visualisierung der Loss function während der Optimierung
+ggplot(data[-(1:10), ]) +
   geom_line(aes(x = 1:length(val_loss), y = val_loss, colour = "Validation Loss")) +
   geom_line(aes(x = 1:length(loss), y = loss, colour = "Training Loss")) +
-  scale_colour_manual(values = c("Training Loss"="blue", "Validation Loss" = "red")) +
+  scale_colour_manual(values = c("Training Loss" = "blue", "Validation Loss" = "red")) +
   labs(title = "Loss Function Values During Optimazation") +
   xlab("Iteration Number") +
   ylab("Loss")
-
-
 ```
+
 
 ### Auswertung der Schätzergebnisse
 
@@ -313,11 +362,12 @@ validation_predictions <- py$model$predict(validation_features)
 testing_predictions <- py$model$predict(testing_features)
 t_predictions <- py$model$predict(t_features)
 
-a <- format(mape(training_labels[,1], training_predictions[,1])*100, digits=3, nsmall=2)
-b <- format(mape(training_labels[,2], training_predictions[,2])*100, digits=3, nsmall=2)
-c <- format(mape(training_labels[,3], training_predictions[,3])*100, digits=3, nsmall=2)
-d <- format(mape(training_labels[,4], training_predictions[,4])*100, digits=3, nsmall=2)
-e <- format(mape(training_labels[,5], training_predictions[,5])*100, digits=3, nsmall=2)
+# MAPE berechnen
+a <- format(mape(training_labels[, 1], training_predictions[, 1]) * 100, digits = 3, nsmall = 2)
+b <- format(mape(training_labels[, 2], training_predictions[, 2]) * 100, digits = 3, nsmall = 2)
+c <- format(mape(training_labels[, 3], training_predictions[, 3]) * 100, digits = 3, nsmall = 2)
+d <- format(mape(training_labels[, 4], training_predictions[, 4]) * 100, digits = 3, nsmall = 2)
+e <- format(mape(training_labels[, 5], training_predictions[, 5]) * 100, digits = 3, nsmall = 2)
 
 cat(paste0("\nMAPE on the Training Data1:\t", a))
 cat(paste0("\nMAPE on the Training Data2:\t", b))
@@ -325,24 +375,24 @@ cat(paste0("\nMAPE on the Training Data3:\t", c))
 cat(paste0("\nMAPE on the Training Data4:\t", d))
 cat(paste0("\nMAPE on the Training Data5:\t", e, "\n"))
 
-g <- format(mape(validation_labels[,1], validation_predictions[,1])*100, digits=3, nsmall=2)
-h <- format(mape(validation_labels[,2], validation_predictions[,2])*100, digits=3, nsmall=2)
-i <- format(mape(validation_labels[,3], validation_predictions[,3])*100, digits=3, nsmall=2)
-j <- format(mape(validation_labels[,4], validation_predictions[,4])*100, digits=3, nsmall=2)
-k <- format(mape(validation_labels[,5], validation_predictions[,5])*100, digits=3, nsmall=2)
-  
+g <- format(mape(validation_labels[, 1], validation_predictions[, 1]) * 100, digits = 3, nsmall = 2)
+h <- format(mape(validation_labels[, 2], validation_predictions[, 2]) * 100, digits = 3, nsmall = 2)
+i <- format(mape(validation_labels[, 3], validation_predictions[, 3]) * 100, digits = 3, nsmall = 2)
+j <- format(mape(validation_labels[, 4], validation_predictions[, 4]) * 100, digits = 3, nsmall = 2)
+k <- format(mape(validation_labels[, 5], validation_predictions[, 5]) * 100, digits = 3, nsmall = 2)
+
 cat(paste0("\nMAPE on the Validation Data1:\t", g))
 cat(paste0("\nMAPE on the Validation Data2:\t", h))
 cat(paste0("\nMAPE on the Validation Data3:\t", i))
 cat(paste0("\nMAPE on the Validation Data4:\t", j))
 cat(paste0("\nMAPE on the Validation Data5:\t", k, "\n"))
 
-l <- format(mape(t_labels[,1], t_predictions[,1])*100, digits=3, nsmall=2)
-m <- format(mape(t_labels[,2], t_predictions[,2])*100, digits=3, nsmall=2)
-n <- format(mape(t_labels[,3], t_predictions[,3])*100, digits=3, nsmall=2)
-o <- format(mape(t_labels[,4], t_predictions[,4])*100, digits=3, nsmall=2)
-p <- format(mape(t_labels[,5], t_predictions[,5])*100, digits=3, nsmall=2)
-  
+l <- format(mape(t_labels[, 1], t_predictions[, 1]) * 100, digits = 3, nsmall = 2)
+m <- format(mape(t_labels[, 2], t_predictions[, 2]) * 100, digits = 3, nsmall = 2)
+n <- format(mape(t_labels[, 3], t_predictions[, 3]) * 100, digits = 3, nsmall = 2)
+o <- format(mape(t_labels[, 4], t_predictions[, 4]) * 100, digits = 3, nsmall = 2)
+p <- format(mape(t_labels[, 5], t_predictions[, 5]) * 100, digits = 3, nsmall = 2)
+
 cat(paste0("\nMAPE on the Validation Data1:\t", l))
 cat(paste0("\nMAPE on the Validation Data2:\t", m))
 cat(paste0("\nMAPE on the Validation Data3:\t", n))
@@ -350,169 +400,172 @@ cat(paste0("\nMAPE on the Validation Data4:\t", o))
 cat(paste0("\nMAPE on the Validation Data5:\t", p, "\n"))
 
 # Mean of Training and Validation Data MAPE
-meanT <- c(as.double(a), as.double(b), as.double(c), as.double(d), as.double(e)) 
-meanV <- c(as.double(g), as.double(h), as.double(i), as.double(j), as.double(k)) 
-meanT <- c(as.double(l), as.double(m), as.double(n), as.double(o), as.double(p)) 
+meanT <- c(as.double(a), as.double(b), as.double(c), as.double(d), as.double(e))
+meanV <- c(as.double(g), as.double(h), as.double(i), as.double(j), as.double(k))
+meanT <- c(as.double(l), as.double(m), as.double(n), as.double(o), as.double(p))
 
 cat(paste0("\nMean Training MAPE: ", mean(meanT), "\n"))
 cat(paste0("Mean Validation MAPE: ", mean(meanV), "\n"))
 cat(paste0("Mean Test MAPE: ", mean(meanT), "\n"))
 ```
 
+
 ### Grafischer vergleich der vorhergesagten & tatsächlicher Preise für die Trainings- und Validierungsdaten
 
 ```{r}
-data_train <- data.frame(prediction = training_predictions[,1], actual = training_labels[,1])
-data_val <- data.frame(prediction = validation_predictions[,1], actual = validation_labels[,1])
-data_test <- data.frame(prediction = testing_predictions[,1])
+data_train <- data.frame(prediction = training_predictions[, 1], actual = training_labels[, 1])
+data_val <- data.frame(prediction = validation_predictions[, 1], actual = validation_labels[, 1])
+data_test <- data.frame(prediction = testing_predictions[, 1])
+
+#------------------------- Warengruppe 1 -------------------------#
 
 # Plot der Ergebnisse der Trainingsdaten
 ggplot(data_train[]) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Training Data 1") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
+  labs(title = "Predicted and Actual Values for the Training Data 1") +
   xlab("Case Number") +
-  ylab("Price in EUR") 
+  ylab("Price in EUR")
 
 # Plot der Ergebnisse der Validierungsdaten
-ggplot(data_val[,]) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Validation Data 1") +
+ggplot(data_val[, ]) +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
+  labs(title = "Predicted and Actual Values for the Validation Data 1") +
   xlab("Case Number") +
   ylab("Price in EUR")
 
 # Plot der Ergebnisse der Testdaten
 ggplot(data_test) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  labs(title="Prediction for the Test Data 1") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  labs(title = "Prediction for the Test Data 1") +
   xlab("Case Number") +
-  ylab("Price in EUR") 
+  ylab("Price in EUR")
 
-#------------------------- 2 -------------------------#
+#------------------------- Warengruppe 2 -------------------------#
 
-data_train2 <- data.frame(prediction = training_predictions[,2], actual = training_labels[,2])
-data_val2 <- data.frame(prediction = validation_predictions[,2], actual = validation_labels[,2])
-data_test2 <- data.frame(prediction = testing_predictions[,2])
+data_train2 <- data.frame(prediction = training_predictions[, 2], actual = training_labels[, 2])
+data_val2 <- data.frame(prediction = validation_predictions[, 2], actual = validation_labels[, 2])
+data_test2 <- data.frame(prediction = testing_predictions[, 2])
 
 # Plot der Ergebnisse der Trainingsdaten
 ggplot(data_train2) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Training Data 2") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
+  labs(title = "Predicted and Actual Values for the Training Data 2") +
   xlab("Case Number") +
-  ylab("Price in EUR") 
+  ylab("Price in EUR")
 
 # Plot der Ergebnisse der Validierungsdaten
 ggplot(data_val2) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Validation Data 2") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
+  labs(title = "Predicted and Actual Values for the Validation Data 2") +
   xlab("Case Number") +
   ylab("Price in EUR")
 
 # Plot der Ergebnisse der Testdaten
 ggplot(data_test2) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  labs(title="Prediction for the Test Data 2") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  labs(title = "Prediction for the Test Data 2") +
   xlab("Case Number") +
-  ylab("Price in EUR") 
+  ylab("Price in EUR")
 
-#------------------------- 3 -------------------------#
+#------------------------- Warengruppe 3 -------------------------#
 
-data_train3 <- data.frame(prediction = training_predictions[,3], actual = training_labels[,3])
-data_val3 <- data.frame(prediction = validation_predictions[,3], actual = validation_labels[,3])
-data_test3 <- data.frame(prediction = testing_predictions[,3])
+data_train3 <- data.frame(prediction = training_predictions[, 3], actual = training_labels[, 3])
+data_val3 <- data.frame(prediction = validation_predictions[, 3], actual = validation_labels[, 3])
+data_test3 <- data.frame(prediction = testing_predictions[, 3])
 
 # Plot der Ergebnisse der Trainingsdaten
 ggplot(data_train3) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Training Data 3") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
+  labs(title = "Predicted and Actual Values for the Training Data 3") +
   xlab("Case Number") +
-  ylab("Price in EUR") 
+  ylab("Price in EUR")
 
 # Plot der Ergebnisse der Validierungsdaten
 ggplot(data_val3) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Validation Data 3") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
+  labs(title = "Predicted and Actual Values for the Validation Data 3") +
   xlab("Case Number") +
   ylab("Price in EUR")
 
 # Plot der Ergebnisse der Testdaten
 ggplot(data_test3) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  labs(title="Prediction for the Test Data 3") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  labs(title = "Prediction for the Test Data 3") +
   xlab("Case Number") +
-  ylab("Price in EUR") 
+  ylab("Price in EUR")
 
 
-#------------------------- 4 -------------------------#
+#------------------------- Warengruppe 4 -------------------------#
 
-data_train4 <- data.frame(prediction = training_predictions[,4], actual = training_labels[,4])
-data_val4 <- data.frame(prediction = validation_predictions[,4], actual = validation_labels[,4])
-data_test4 <- data.frame(prediction = testing_predictions[,4])
+data_train4 <- data.frame(prediction = training_predictions[, 4], actual = training_labels[, 4])
+data_val4 <- data.frame(prediction = validation_predictions[, 4], actual = validation_labels[, 4])
+data_test4 <- data.frame(prediction = testing_predictions[, 4])
 
 # Plot der Ergebnisse der Trainingsdaten
 ggplot(data_train4) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Training Data 4") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
+  labs(title = "Predicted and Actual Values for the Training Data 4") +
   xlab("Case Number") +
-  ylab("Price in EUR") 
+  ylab("Price in EUR")
 
 # Plot der Ergebnisse der Validierungsdaten
 ggplot(data_val4) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Validation Data 4") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
+  labs(title = "Predicted and Actual Values for the Validation Data 4") +
   xlab("Case Number") +
   ylab("Price in EUR")
 
 # Plot der Ergebnisse der Testdaten
 ggplot(data_test4) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  labs(title="Prediction for the Test Data 4") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  labs(title = "Prediction for the Test Data 4") +
   xlab("Case Number") +
-  ylab("Price in EUR") 
+  ylab("Price in EUR")
 
-#------------------------- 5 -------------------------#
+#------------------------- Warengruppe 5 -------------------------#
 
-data_train5 <- data.frame(prediction = training_predictions[,5], actual = training_labels[,5])
-data_val5 <- data.frame(prediction = validation_predictions[,5], actual = validation_labels[,5])
-data_test5 <- data.frame(prediction = testing_predictions[,5])
+data_train5 <- data.frame(prediction = training_predictions[, 5], actual = training_labels[, 5])
+data_val5 <- data.frame(prediction = validation_predictions[, 5], actual = validation_labels[, 5])
+data_test5 <- data.frame(prediction = testing_predictions[, 5])
 
 # Plot der Ergebnisse der Trainingsdaten
 ggplot(data_train5) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Training Data 5") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
+  labs(title = "Predicted and Actual Values for the Training Data 5") +
   xlab("Case Number") +
-  ylab("Price in EUR") 
+  ylab("Price in EUR")
 
 # Plot der Ergebnisse der Validierungsdaten
 ggplot(data_val5) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  geom_line( aes(x=1:length(actual), y=actual, colour = "Actual Values" )) +
-  scale_colour_manual( values = c("Predicted Values"="blue", "Actual Values"="red") ) +
-  labs(title="Predicted and Actual Values for the Validation Data 5") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
+  labs(title = "Predicted and Actual Values for the Validation Data 5") +
   xlab("Case Number") +
   ylab("Price in EUR")
 
 # Plot der Ergebnisse der Testdaten
 ggplot(data_test5) +
-  geom_line( aes(x=1:length(prediction), y=prediction, colour = "Predicted Values" )) +
-  labs(title="Prediction for the Test Data 5") +
+  geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  labs(title = "Prediction for the Test Data 5") +
   xlab("Case Number") +
-  ylab("Price in EUR") 
+  ylab("Price in EUR")
 ```
