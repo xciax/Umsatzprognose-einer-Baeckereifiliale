@@ -592,7 +592,7 @@ testing_predictions2 <- testing_predictions2 %>% filter(Datum != "2019-07-10")
 write.csv(testing_predictions2, "predictions.csv", row.names = FALSE, quote = FALSE)
 predictions <- read_csv("predictions.csv")
 
-name <- "Gruppe 2"
+name <- "Gruppe 12"
 # Execution of the request
 r <- POST("https://bakery-sales-mape-tolicqztoq-ey.a.run.app/",
   body = list(name = name, predictions = predictions),

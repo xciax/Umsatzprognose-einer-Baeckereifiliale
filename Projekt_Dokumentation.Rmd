@@ -1,12 +1,36 @@
 ---
-title: "R Notebook"
-output: html_notebook
-editor_options: 
-  markdown: 
-    wrap: 72
+title: "Projekt Dokumentation"
+output:
+  html_notebook: default
+  pdf_document: default
+editor_options:
+  markdown:
+    wrap: 62
 ---
+### Umsatzprognose Bäckerfiale
+#### Gruppe 12
+#### Armando Criscuolo, Clara Urban
+#### Git-Repository: https://github.com/xciax/ACTC
 
-# Projekt Dokumentation
+## Einleitung
+Das Ziel dieser Projektdokumentation ist es, die grobe Struktur des Projekts zu erläutern, den ungefähren Ablauf der Arbeiten zu dokumentieren, die verwendeten Datensätze zu benennen und den geschriebenen Code, die verwendeten Tools und Methoden zur Datenaufbereitung sowie die Schritte zur Erstellung des neuronalen Netzes aufzuzeigen.
+Die verschiedenen Dateien des Projekts (Struktur) lassen sich in folgende Kategorien einordnen:
+
+1. Die .R/.Rmd/.py Dateien, von der diese Datei die wichtigste ist, sind der Ort für die Datenaufbereitung, das NN und die Auswertung des NN. In dieser Datei hat die meiste Arbeit des Projekts stattgefunden und auf dieser basiert die zweit wichtigste Datei, nämlich die Projekt Päsentations: "Preasentation.Rmd".
+
+2. Die Datensatz Dateien mit den Endungen .Rda/.csv oder der Ordner "Facheinzelhandel_Umsatzt_SH", in welchem die Excel Dateien gespeichert sind auf dem der Datensatz basiert, sind der Ort für die Speicherung unserer Daten für das Projekt. 
+
+Der Ablauf des Projekts lässt sich in drei verschiedene Phasen einteilen:
+
+1. Installierung aller nötigen Umgebungen, Programme und Tools, sowie das lernen des vermittelten Wissens im Laufe des Kurses, sowie die Sammlung nützlicher (und weniger nütlicher) Datensätze, deren Aufbereitung und Erforschung. 
+
+2. Die endgültige Aufbereitung der Daten, deren Abstimmung auf das NN, das experemtiern, verbesseren und optimieren des NN und anderer Tools, anhand der gemessenen Performance des NN.
+
+3. Feinschliff des NN und erstellen der Päsentation und Projekt Dokumentation.
+
+## Verwendete Datensätze 
+#### (nicht Aufbereitet)
+
 
 ## Aufgabe: Vorhersage der Umsätze vom 9.6.2019 bis 30.07.2019
 
@@ -29,7 +53,6 @@ remove(list = ls())
 # Create list with needed libraries
 # Quellen:
 #   1. synthpop: https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
-#   2.
 pkgs <- c(
   "lubridate", "stringr", "tidyverse", "readr",
   "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM", "synthpop", "httr", "styler"

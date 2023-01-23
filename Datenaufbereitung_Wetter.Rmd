@@ -2,7 +2,9 @@
 title: "R Notebook"
 output: html_notebook
 ---
+
 ### Lade notwendige Pakete
+
 ```{r}
 install.packages("tidyr")
 library(tidyr)
@@ -11,6 +13,7 @@ library(dplyr)
 ```
 
 ### Lade notwendige Daten
+
 ```{r}
 load("wetterDT.Rda")
 load("wettercodes.Rda")
@@ -21,6 +24,7 @@ pj_wettercodes <- wettercodes
 ```
 
 ### Betrachtung der Rohdaten Wetter
+
 ```{r}
 # Wetterdaten aufbereiten - Wettercode
 # Verteilung betrachten als Histogramm
@@ -45,6 +49,7 @@ wcode_freq <- merge(pj_wettercodes, pj_wcode, by = "Code")
 ```
 
 ### Wettercodes zusammenfassen
+
 ```{r}
 # Zunächst eine neue Variable (Spalte) im df pj_wetter anlegen und mit dem bestehenden Code füllen
 pj_wetter$WC <- pj_wetter$Wettercode
@@ -111,8 +116,8 @@ pj_wetter$WC[pj_wetter$Wettercode %in% Gewitter] <- paste("Gewitter")
 #summary(pj_wetter)
 ```
 
-
 ### Windgeschwindigkeit zu Windstärke und Bewölkung zu Bewölkungsgrad zusammenfassen
+
 ```{r}
 #windgeschwindigkeit in m/s zusammenfassen in Windstärken 
 # dt mit Windstärken und Windgeschwindigkeit erstellen
@@ -139,9 +144,8 @@ save(pj_wetter, file="wetter.Rda")
 
 ```
 
-
-
 ### Jetzt noch ein Dummy-Encoding des Wettercodes und des Bewölkungsgrades durchführen
+
 ```{r}
 pj_wetter_dummy <- dummy_cols(pj_wetter, 
                               select_columns = c("WC", "Bewoelkungsgrad"), 
