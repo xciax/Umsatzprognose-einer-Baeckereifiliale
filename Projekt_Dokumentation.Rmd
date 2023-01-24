@@ -31,15 +31,22 @@ Der Ablauf des Projekts lässt sich in drei verschiedene Phasen einteilen:
 ## Verwendete Datensätze 
 #### (nicht Aufbereitet)
 
+##### Gestellete Datensätze 
+1. Umsatz Daten: https://github.com/opencampus-sh/einfuehrung-in-data-science-und-ml/blob/main/umsatzdaten_gekuerzt.csv
 
-## Aufgabe: Vorhersage der Umsätze vom 9.6.2019 bis 30.07.2019
+2. Kieler Woche: https://github.com/opencampus-sh/einfuehrung-in-data-science-und-ml/blob/main/kiwo.csv
 
-#### Infos zu den gegebenen Daten
+3. Wetter Daten: https://github.com/opencampus-sh/einfuehrung-in-data-science-und-ml/blob/main/wetter.csv
 
-Warengruppen: \* 1 = Brot \* 2 = Brötchen \* 3 = Croissant \* 4 =
-Konditorei \* 5 = Kuchen \* 6 = Saisonbrot
 
-#### Saisonbrot muss nicht vorhergesagt werden! Siehe 'predition_template.csv'.
+##### Selbst erstellte Datensätze 
+1. Schulferien SH: Manuell erstellt
+
+2. Umsatz im Facheinzelhandel mit Nahrungsmitteln SH: https://www.govdata.de/web/guest/suchen/-/searchresult/f/groups%3Aecon%2Csourceportal%3A81b1a55a-02f7-42a5-a2b9-85698c6888c4%2Ctags%3Aentwicklung-im-einzelhandel-in-schleswig-holstein%2C/s/relevance_desc
+
+## Datenaufbereitung
+####Dateien mit benutzt zur Datenaufarbeitung
+1. 
 
 Wetterdaten: \* Mittlerer Bewölkungsgrad am Tag (0 = min, 8 = max) \*
 MIttlere Temperatur in C \* Mittlere Windgeschwindigkeit in m/s \*
