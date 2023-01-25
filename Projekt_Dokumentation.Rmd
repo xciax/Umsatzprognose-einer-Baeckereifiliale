@@ -7,88 +7,115 @@ editor_options:
   markdown:
     wrap: 62
 ---
+
 ### Umsatzprognose Bäckerfiale
+
 #### Gruppe 12
+
 #### Armando Criscuolo, Clara Urban
-#### Git-Repository: https://github.com/xciax/ACTC
+
+#### Git-Repository: <https://github.com/xciax/ACTC>
 
 ## Einleitung
-Das Ziel dieser Projektdokumentation ist es, die grobe Struktur des Projekts zu erläutern, den ungefähren Ablauf der Arbeiten zu dokumentieren, die verwendeten Datensätze zu benennen und den geschriebenen Code, die verwendeten Tools und Methoden zur Datenaufbereitung sowie die Schritte zur Erstellung des neuronalen Netzes aufzuzeigen.
-Die verschiedenen Dateien des Projekts (Struktur) lassen sich in folgende Kategorien einordnen:
 
-1. Die .R/.Rmd/.py Dateien, von der diese Datei die wichtigste ist, sind der Ort für die Datenaufbereitung, das NN und die Auswertung des NN. In dieser Datei hat die meiste Arbeit des Projekts stattgefunden und auf dieser basiert die zweit wichtigste Datei, nämlich die Projekt Päsentations: "Preasentation.Rmd".
+Das Ziel dieser Projektdokumentation ist es, die grobe
+Struktur des Projekts zu erläutern, den ungefähren Ablauf der
+Arbeiten zu dokumentieren, die verwendeten Datensätze zu
+benennen und den geschriebenen Code, die verwendeten Tools und
+Methoden zur Datenaufbereitung sowie die Schritte zur
+Erstellung des neuronalen Netzes aufzuzeigen. Die
+verschiedenen Dateien des Projekts (Struktur) lassen sich in
+folgende Kategorien einordnen:
 
-2. Die Datensatz Dateien mit den Endungen .Rda/.csv oder der Ordner "Facheinzelhandel_Umsatzt_SH", in welchem die Excel Dateien gespeichert sind auf dem der Datensatz basiert, sind der Ort für die Speicherung unserer Daten für das Projekt. 
+1.  Die .R/.Rmd/.py Dateien, von der diese Datei die
+    wichtigste ist, sind der Ort für die Datenaufbereitung,
+    das NN und die Auswertung des NN. In dieser Datei hat die
+    meiste Arbeit des Projekts stattgefunden und auf dieser
+    basiert die zweit wichtigste Datei, nämlich die Projekt
+    Päsentations: "Preasentation.Rmd".
 
-Der Ablauf des Projekts lässt sich in drei verschiedene Phasen einteilen:
+2.  Die Datensatz Dateien mit den Endungen .Rda/.csv oder der
+    Ordner "Facheinzelhandel_Umsatzt_SH", in welchem die Excel
+    Dateien gespeichert sind auf dem der Datensatz basiert,
+    sind der Ort für die Speicherung unserer Daten für das
+    Projekt.
 
-1. Installierung aller nötigen Umgebungen, Programme und Tools, sowie das lernen des vermittelten Wissens im Laufe des Kurses, sowie die Sammlung nützlicher (und weniger nütlicher) Datensätze, deren Aufbereitung und Erforschung. 
+Der Ablauf des Projekts lässt sich in drei verschiedene Phasen
+einteilen:
 
-2. Die endgültige Aufbereitung der Daten, deren Abstimmung auf das NN, das experemtiern, verbesseren und optimieren des NN und anderer Tools, anhand der gemessenen Performance des NN.
+1.  Installierung aller nötigen Umgebungen, Programme und
+    Tools, sowie das lernen des vermittelten Wissens im Laufe
+    des Kurses, sowie die Sammlung nützlicher (und weniger
+    nütlicher) Datensätze, deren Aufbereitung und Erforschung.
 
-3. Feinschliff des NN und erstellen der Päsentation und Projekt Dokumentation.
+2.  Die endgültige Aufbereitung der Daten, deren Abstimmung
+    auf das NN, das experemtiern, verbesseren und optimieren
+    des NN und anderer Tools, anhand der gemessenen
+    Performance des NN.
 
-## Verwendete Datensätze 
+3.  Feinschliff des NN und erstellen der Päsentation und
+    Projekt Dokumentation.
+
+## Verwendete Datensätze
+
 #### (nicht Aufbereitet)
 
-##### Gestellete Datensätze 
-1. Umsatz Daten: https://github.com/opencampus-sh/einfuehrung-in-data-science-und-ml/blob/main/umsatzdaten_gekuerzt.csv
+##### Gestellete Datensätze
 
-2. Kieler Woche: https://github.com/opencampus-sh/einfuehrung-in-data-science-und-ml/blob/main/kiwo.csv
+1.  Umsatz Daten:
+    <https://github.com/opencampus-sh/einfuehrung-in-data-science-und-ml/blob/main/umsatzdaten_gekuerzt.csv>
 
-3. Wetter Daten: https://github.com/opencampus-sh/einfuehrung-in-data-science-und-ml/blob/main/wetter.csv
+2.  Kieler Woche:
+    <https://github.com/opencampus-sh/einfuehrung-in-data-science-und-ml/blob/main/kiwo.csv>
 
+3.  Wetter Daten:
+    <https://github.com/opencampus-sh/einfuehrung-in-data-science-und-ml/blob/main/wetter.csv>
 
-##### Selbst erstellte Datensätze 
-1. Schulferien SH: Manuell erstellt
+##### Selbst erstellte Datensätze
 
-2. Umsatz im Facheinzelhandel mit Nahrungsmitteln SH: https://www.govdata.de/web/guest/suchen/-/searchresult/f/groups%3Aecon%2Csourceportal%3A81b1a55a-02f7-42a5-a2b9-85698c6888c4%2Ctags%3Aentwicklung-im-einzelhandel-in-schleswig-holstein%2C/s/relevance_desc
+1.  Schulferien SH: Manuell erstellt
 
-## Datenaufbereitung
-####Dateien mit benutzt zur Datenaufarbeitung
-1. 
-
-Wetterdaten: \* Mittlerer Bewölkungsgrad am Tag (0 = min, 8 = max) \*
-MIttlere Temperatur in C \* Mittlere Windgeschwindigkeit in m/s \*
-Wettercode (<http://www.seewetter-kiel.de/seewetter/daten_symbole.htm>)
-\* und in der Datei wettercodes.Rda
+2.  Umsatz im Facheinzelhandel mit Nahrungsmitteln SH:
+    <https://www.govdata.de/web/guest/suchen/-/searchresult/f/groups%3Aecon%2Csourceportal%3A81b1a55a-02f7-42a5-a2b9-85698c6888c4%2Ctags%3Aentwicklung-im-einzelhandel-in-schleswig-holstein%2C/s/relevance_desc>
 
 ### Benötigte Libraries laden
 
 ```{r}
-remove(list = ls())
-# Create list with needed libraries
-# Quellen:
-#   1. synthpop: https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
-pkgs <- c(
-  "lubridate", "stringr", "tidyverse", "readr",
-  "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM", "synthpop", "httr", "styler"
-)
+# Remove all objects in the current environment
+rm(list = ls())
 
-# Load each listed library and check if it is installed and install if necessary
-for (pkg in pkgs) {
-  if (!require(pkg, character.only = TRUE)) {
-    install.packages(pkg)
-    library(pkg, character.only = TRUE)
+# Create a list of needed packages
+needed_packages <- c("lubridate", "stringr", "tidyverse", "readr",
+                     "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM", "synthpop", "httr", "styler")
+
+# Iterate through the list of needed packages and check if they are installed
+# If not, install them and load them into the environment
+for (package in needed_packages) {
+  if (!require(package, character.only = TRUE)) {
+    install.packages(package)
+    library(package, character.only = TRUE)
   }
 }
+
 ```
+
+## Datenaufbereitung
 
 ### Vorbereitete Datensätze laden
 
-Skripte, in denen die Daten aufbereitet wurden, und Namen der fertigen gespeicherten Datensätze:
--   Wetterdaten  --> "Datenaufbereitung_Wetter.Rmd" -->
--   Feiertagedaten  --> "Datenaufbereitung_Feiertage.R" 
--   Schulferien  --> "Datenaufbereitung_Schulferien.R" 
--   Umsatzdaten  --> "Datenaufbereitung_Umsatz.R" 
--   Umsatzdaten aus dem Facheinzelhandel --> "Datenaufbereitung_FEH.R" 
+Skripte, in denen die Daten aufbereitet wurden, und Namen der fertigen gespeicherten Datensätze: 
 
+1. Wetterdaten --\> "Datenaufbereitung_Wetter.Rmd" 
 
+2. Feiertagedaten --\> "Datenaufbereitung_Feiertage.R"
 
+3. Schulferien --\> "Datenaufbereitung_Schulferien.R"
+
+4. Umsatzdaten --\> "Datenaufbereitung_Umsatz.R"
+
+5. Umsatzdaten aus dem Facheinzelhandel --\> "Datenaufbereitung_FEH.R"
 
 ```{r}
-# Daten laden und gegebenenfalls umbenennen
-
 load("pj_wetter_dummy.Rda")
 pj_wetter <- pj_wetter_dummy
 
@@ -101,68 +128,49 @@ load("schulferien.Rda")
 pj_schulferien <- schulferien
 
 load("umsatzFachEinzelHandelSH.Rda")
-
 ```
 
-### Erstellung des Trainingsdatensatzen ("trainValidData")
+### Andere Datenaufbereitungs Datein
+
+1. Extraktion der Umsatzdaten aus dem Facheinzelhandel: "xlxs_file_parsing.py"
+
+### Erstellung des Trainingsdatensatzen "trainValidData" und "synTrainValidData"
+#### (Zusammenführung der vorbereiteten Datensätze)
 
 ```{r}
-# ----- Zusammenführung der vorbereiteten Datensätze ----- #
-
-# Merge erstellt automatisch die Schnittmenge
-# Der Zusatz all.x = TRUE sorgt dafür, dass keine Zeilen (basierend auf Datensatz x) weggelöscht werden
-# Wetterdaten nach Datum hinzufügen
+# Merge the data sets
 pj_umsatz_wetter <- merge(pj_umsatz, pj_wetter, by = "Datum", all.x = TRUE)
-
-# Schulferien nach Datum hinzufügen
 pj_umsatz_wetter_ferien <- merge(pj_umsatz_wetter, pj_schulferien, by = "Datum", all.x = TRUE)
-
-# KiWo nach Datum hinzufügen
 allData <- merge(pj_umsatz_wetter_ferien, pj_kiwo, by = "Datum", all.x = TRUE)
-
-# Umsatz aus Facheinzelhandel in SH hinzufügen
 allData <- merge(allData, umsatzFachEinzelHandelSH, by = "Datum", all.x = TRUE)
 
-
-# ----- auf fehlende Werte überprüfen ----- #
+# Aggregate and impute missing data
 allData_na <- allData %>%
   aggr(combined = TRUE, numbers = TRUE)
-
-# Imputation für Temperatur und Windstaerke 
-# Aktuell: "Datenspende" vom Wert vom Vortag
 allData <- allData %>%
   hotdeck(
     variable = c("Temperatur", "Windstaerke"),
     ord_var = "Datum"
   )
 
-# imputierte Werte graphisch überprüfen:
+# Plot the data
 ggplot(allData) +
   geom_point(aes(x = Datum, y = Temperatur, color = Temperatur_imp))
 ggplot(allData) +
   geom_point(aes(x = Datum, y = Windstaerke, color = Windstaerke_imp))
 
-# Weitere NA behandeln 
-# NA Wettercodes zu 0, da Spalte WC_NA angibt, wo Wettercodes gefehlt haben
-# Spalten 12 -24
-
-# das gleiche gilt bei der Bewölkung
-# Spalten 26 - 29
-
-# weitere NA mit 0 füllen, dort wo es Sinn ergibt: KiWO, Schulferien
-
+# Replace missing data with zeroes
 allData <- allData %>%
   mutate_at(c(12:34), ~ replace(., is.na(.), 0))
 
-# -----  synthetische Daten generieren  ----- #
+# Synthesize data using the synthpop package
 synthpop_allData <- syn(allData)[["syn"]]
 
-## ----- Umformung des Datensatzes, sodass dieser ans Modell übergeben werden kann ----- #
-# dummy coding der Wochentage in realen und synthetischen Daten
+# Create dummy variables
 allData_dummy <- dummy_cols(allData, select_columns = "Wochentag")
 synthpop_allData_dummy <- dummy_cols(synthpop_allData, select_columns = "Wochentag")
 
-# Jahr, Monat und Tag aus Monat als einzelne Variablen mit einfügen (reale und syn data)
+# Extract year, month, and day from the date variable
 allData_dummy$year <- year(allData_dummy$Datum)
 allData_dummy$month <- month(allData_dummy$Datum)
 allData_dummy$day <- day(allData_dummy$Datum)
@@ -170,81 +178,83 @@ synthpop_allData_dummy$year <- year(synthpop_allData_dummy$Datum)
 synthpop_allData_dummy$month <- month(synthpop_allData_dummy$Datum)
 synthpop_allData_dummy$day <- day(synthpop_allData_dummy$Datum)
 
-# Datensätze mit Datum abspeichern
+# Save data sets
 save(allData_dummy, file = "projectData_dummy_D.Rda")
 save(synthpop_allData_dummy, file = "projectSynthpopData_dummy_D.Rda")
 
-# Spalte mit Datum für die weitere Nutzung entfernen
+# Remove the date variable
 allData_dummy$Datum <- NULL
 synthpop_allData_dummy$Datum <- NULL
 
-# fertigen Datensätze speichern 
+# Save data sets
 save(allData_dummy, file = "projectData_dummy.Rda")
 save(synthpop_allData_dummy, file = "projectSynthpopData_dummy.Rda")
 
+# Rename Data Sets 
 trainValidData <- allData_dummy
 synTrainValidData <- synthpop_allData_dummy
-
 ```
 
-### Testdatensatz für den Zeitraum vom 09.06 - 30.07.2019
+### Erstellung des Testdatensatzes für den Zeitraum vom 09.06 - 30.07.2019
 
 ```{r}
-# ----- Testdatensatz erstellen, mit allen Variablen außer dem Umsatz, welcher vorhergesagt werden soll  ----- #
-
-# Erstelle einen leeren Dataframe mit einer Spalte für das Datum
+# Create an empty data frame for test data
 testDatenSatz <- data.frame(Datum = character())
 
-# Erstelle eine Sequenz von Daten im angegebenen Zeitraum
+# Create a sequence of dates
 datum_sequenz <- seq(
   from = as.Date("2019-06-09"),
   to = as.Date("2019-07-30"),
   by = "days"
 )
 
-# Füge die Daten der Sequenz dem Dataframe hinzu
+# Select specific columns from the pj_umsatz data set
 sBrot <- select(pj_umsatz, "Datum", "Saisonbrot")
+
+# Add the date sequence to the test data frame
 testDatenSatz <- rbind(testDatenSatz, data.frame(Datum = datum_sequenz))
+
+# Add the day of the week to the test data frame
 testDatenSatz$Wochentag <- weekdays(testDatenSatz$Datum)
+
+# Merge the test data frame with other data sets
 testDatenSatz <- merge(testDatenSatz, pj_wetter, by = "Datum", all.x = TRUE)
 testDatenSatz <- merge(testDatenSatz, pj_schulferien, by = "Datum", all.x = TRUE)
 testDatenSatz <- merge(testDatenSatz, pj_kiwo, by = "Datum", all.x = TRUE)
 testDatenSatz <- merge(testDatenSatz, sBrot, by = "Datum", all.x = TRUE)
 testDatenSatz <- merge(testDatenSatz, umsatzFachEinzelHandelSH, by = "Datum", all.x = TRUE)
 
-# fehlende Werte in Temperatur und Winstaerke Variable imputieren 
-# -> Wert vom Vortag wird genutzt
+# Impute missing data
 testDatenSatz <- testDatenSatz %>%
   hotdeck(
     variable = c("Temperatur", "Windstaerke"),
     ord_var = "Datum"
   )
 
-# imputierte Werte von testDatenSatz graphisch überprüfen:
+# Plot the data
 ggplot(testDatenSatz) +
   geom_point(aes(x = Datum, y = Temperatur, color = Temperatur_imp))
 ggplot(testDatenSatz) +
   geom_point(aes(x = Datum, y = Windstaerke, color = Windstaerke_imp))
 
-# NAs an sinnvollenstellen ersetzen, gleichermaßen wie im Trainingsdatensatz
+# Replace missing data with zeroes
 testDatenSatz <- testDatenSatz %>%
   mutate_at(c(4:26), ~ replace(., is.na(.), 0))
 
-# dummy coding der Wochentage
+# Create dummy variables
 testDatenSatz <- dummy_cols(testDatenSatz, select_columns = "Wochentag")
 
-# Datum auseinanderziehen in einzelne Spalten
+# Extract year, month, and day from the date variable
 testDatenSatz$year <- year(testDatenSatz$Datum)
 testDatenSatz$month <- month(testDatenSatz$Datum)
 testDatenSatz$day <- day(testDatenSatz$Datum)
 
-# Datums SPalte löschen
+# Remove the date and day of the week variables
 testDatenSatz$Datum <- NULL
 testDatenSatz$Wochentag <- NULL
 
-# Testdatensatz überprüfen und speichern
-summary(testDatenSatz)
-save(testDatenSatz, file = "Datenaufbereitung_Testdaten.Rda")
+# Save the test data set
+#save(testDatenSatz, file = "Datenaufbereitung_Testdaten.Rda")
 ```
 
 ## Optimierung des neuronalen Netzes
@@ -252,6 +262,7 @@ save(testDatenSatz, file = "Datenaufbereitung_Testdaten.Rda")
 ### Features & Labels
 
 ```{r}
+# Define the features for the model
 features <- c(
   "day", "month", "year",
   "Windstaerke", "Temperatur", "WC_Bewölkung_abnehmend",
@@ -268,131 +279,114 @@ features <- c(
   "Wochentag_Saturday", "Wochentag_Sunday"
 )
 
+# Define the labels for the model
 labels <- c("Brot", "Brötchen", "Croissant", "Konditorei", "Kuchen")
 ```
 
-
-### Selection of Training, Validation and Test Data
+### Selektion der Trainings, Validirungs und Test Daten
 
 ```{r}
-# Setting the random counter to a fixed value, so the random initialization stays the same (the random split is always the same)
+# Set seed for reproducibility
 set.seed(1)
 
-# Daten in random Gruppen zuweisen
-# 80% Trainingsdaten, 20% Validierungsdaten, 10% Testdaten
+# Assign samples to train, validation and test sets
+assignment <- sample(1:3, size = nrow(trainValidData), prob = c(.7, .2, .1), replace = TRUE)
 
-assignment <-
-  sample(
-    1:2,
-    size = nrow(trainValidData),
-    prob = c(.8, .2),
-    replace = TRUE
-  )
+# Create new training data set by binding samples from original training data and synthetic data
+trainValidData2 <- rbind(trainValidData[assignment == 1, ], synTrainValidData)
 
-#  Datensatz mit synthetischen Daten 
-trainValidData2 <-
-  rbind(trainValidData[assignment == 1, ], synTrainValidData)
-
-# Datensätze mit Trainigs/validierungs Features und Labels
+# Extract features and labels for training, validation and testing sets
 training_features <- trainValidData2[, features]
 training_labels <- trainValidData2[, labels]
 
 validation_features <- trainValidData[assignment == 2, features]
 validation_labels <- trainValidData[assignment == 2, labels]
 
-# Testing Features 
-testing_features <- testData %>%
-  select(all_of(features))
+testing_features <- trainValidData[assignment == 3, features]
+testing_labels <- trainValidData[assignment == 3, labels]
 
-# auf fehlende Werte überprüfen
-table(is.na(training_features))
-table(is.na(validation_features))
-table(is.na(testing_features))
+# Check for any missing data in each set
+#table(is.na(training_features))
+#table(is.na(validation_features))
+#table(is.na(testing_features))
 ```
-
 
 ### Modell aufstellen in Python
 
 ```{python}
-# importiere Python libraries
-
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import InputLayer, Dense, BatchNormalization, Dropout
 from tensorflow.keras.optimizers import Adam
 
-# The argument "input_shape" for the definition of the input layer must include 
-# the number of input variables (features) used for the model. 
-# To automatically calculate this number we use the function `r.training_features.keys()`, 
-# which returns the list of variable names of the dataframe `training_features`.
-# Then, the funtion `len()` returns the length of this list of variable names 
-# (i.e. the number of variables in the input)
-
+# Initialize the model
 model = Sequential([
+  # Input layer with the shape of the input data
   InputLayer(input_shape = (len(r.training_features.keys()), )),
+  # Batch normalization layer
   BatchNormalization(),
+  # First dense layer with swish activation function
   Dense(len(r.training_features.keys()), activation = 'swish'),
+  # Dropout layer with rate 0.2
   Dropout(0.2),
+  # Second dense layer with swish activation function
   Dense(len(r.training_features.keys()), activation = 'swish'),
+  # Dropout layer with rate 0.2
   Dropout(0.2),
+  # Third dense layer with swish activation function
   Dense(len(r.training_features.keys()), activation = 'swish'),
+  # Output layer with 5 units
   Dense(5)
 ])
 
-# Ausgabe einer Zusammenfassung zur Form des MOdells, das geschätzt wird 
+# Print a summary of the model's architecture
 model.summary()
-
 ```
-
 
 ### Schätzung de neuronalen Netzes
 
 ```{python}
-# Definition der Loss Function und der Optimierungsfunktion mit Hyperparametern
+# Compile the model
 model.compile(loss="mape", optimizer=Adam(learning_rate=0.001))
 
-# Schätzung des Modells mittels Validierungsdaten
-history = model.fit(r.training_features, r.training_labels, epochs=300,
+# Fit the model to the training data
+history = model.fit(r.training_features, r.training_labels, epochs=200,
                     validation_data = (r.validation_features, r.validation_labels), verbose=0)
 
-# Modell Speichern
+# Save the model to a file
 model.save("python_model.h5")
 ```
-
 
 ### graphische Ausgabe der Modelloptimierung
 
 ```{r}
-# Graphische Ausgabe der Modelloptimierung
-
-# Daten aus Python Modell in R data frame überführen
 data <- data.frame(
   val_loss = unlist(py$history$history$val_loss),
   loss = unlist(py$history$history$loss)
 )
 
-# Visualisierung der Loss function während der Optimierung
+# Plot the loss values for both training and validation data
 ggplot(data[-(1:10), ]) +
   geom_line(aes(x = 1:length(val_loss), y = val_loss, colour = "Validation Loss")) +
   geom_line(aes(x = 1:length(loss), y = loss, colour = "Training Loss")) +
+  # Specify colors for the lines
   scale_colour_manual(values = c("Training Loss" = "blue", "Validation Loss" = "red")) +
-  labs(title = "Loss Function Values During Optimazation") +
+  # Add title and axis labels
+  labs(title = "Loss Function Values During Optimization") +
   xlab("Iteration Number") +
   ylab("Loss")
 ```
 
-
 ### Auswertung der Schätzergebnisse
 
 ```{r}
-# Schätzung der (normierten) Preise für die Trainings- und Testdaten
+# Predictions
 training_predictions <- py$model$predict(training_features)
 validation_predictions <- py$model$predict(validation_features)
 testing_predictions <- py$model$predict(testing_features)
-t_predictions <- py$model$predict(t_features)
 
-# MAPE berechnen
+# MAPE 
 a <- format(mape(training_labels[, 1], training_predictions[, 1]) * 100, digits = 3, nsmall = 2)
 b <- format(mape(training_labels[, 2], training_predictions[, 2]) * 100, digits = 3, nsmall = 2)
 c <- format(mape(training_labels[, 3], training_predictions[, 3]) * 100, digits = 3, nsmall = 2)
@@ -417,11 +411,11 @@ cat(paste0("\nMAPE on the Validation Data3:\t", i))
 cat(paste0("\nMAPE on the Validation Data4:\t", j))
 cat(paste0("\nMAPE on the Validation Data5:\t", k, "\n"))
 
-l <- format(mape(t_labels[, 1], t_predictions[, 1]) * 100, digits = 3, nsmall = 2)
-m <- format(mape(t_labels[, 2], t_predictions[, 2]) * 100, digits = 3, nsmall = 2)
-n <- format(mape(t_labels[, 3], t_predictions[, 3]) * 100, digits = 3, nsmall = 2)
-o <- format(mape(t_labels[, 4], t_predictions[, 4]) * 100, digits = 3, nsmall = 2)
-p <- format(mape(t_labels[, 5], t_predictions[, 5]) * 100, digits = 3, nsmall = 2)
+l <- format(mape(testing_labels[, 1], testing_predictions[, 1]) * 100, digits = 3, nsmall = 2)
+m <- format(mape(testing_labels[, 2], testing_predictions[, 2]) * 100, digits = 3, nsmall = 2)
+n <- format(mape(testing_labels[, 3], testing_predictions[, 3]) * 100, digits = 3, nsmall = 2)
+o <- format(mape(testing_labels[, 4], testing_predictions[, 4]) * 100, digits = 3, nsmall = 2)
+p <- format(mape(testing_labels[, 5], testing_predictions[, 5]) * 100, digits = 3, nsmall = 2)
 
 cat(paste0("\nMAPE on the Validation Data1:\t", l))
 cat(paste0("\nMAPE on the Validation Data2:\t", m))
@@ -439,17 +433,16 @@ cat(paste0("Mean Validation MAPE: ", mean(meanV), "\n"))
 cat(paste0("Mean Test MAPE: ", mean(meanT), "\n"))
 ```
 
-
 ### Grafischer vergleich der vorhergesagten & tatsächlicher Preise für die Trainings- und Validierungsdaten
 
 ```{r}
 data_train <- data.frame(prediction = training_predictions[, 1], actual = training_labels[, 1])
 data_val <- data.frame(prediction = validation_predictions[, 1], actual = validation_labels[, 1])
-data_test <- data.frame(prediction = testing_predictions[, 1])
+data_test <- data.frame(prediction = testing_predictions[, 1], actual = testing_labels[, 1])
 
-#------------------------- Warengruppe 1 -------------------------#
+#------------------------- product group 1 -------------------------#
 
-# Plot der Ergebnisse der Trainingsdaten
+# Plot training data results
 ggplot(data_train[]) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
   geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
@@ -458,7 +451,7 @@ ggplot(data_train[]) +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-# Plot der Ergebnisse der Validierungsdaten
+# Plot validation data results
 ggplot(data_val[, ]) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
   geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
@@ -467,20 +460,22 @@ ggplot(data_val[, ]) +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-# Plot der Ergebnisse der Testdaten
+# Plot test data results
 ggplot(data_test) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
   labs(title = "Prediction for the Test Data 1") +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-#------------------------- Warengruppe 2 -------------------------#
+#------------------------- product group 2 -------------------------#
 
 data_train2 <- data.frame(prediction = training_predictions[, 2], actual = training_labels[, 2])
 data_val2 <- data.frame(prediction = validation_predictions[, 2], actual = validation_labels[, 2])
-data_test2 <- data.frame(prediction = testing_predictions[, 2])
+data_test2 <- data.frame(prediction = testing_predictions[, 2], actual = testing_labels[, 2])
 
-# Plot der Ergebnisse der Trainingsdaten
+# Plot training data results
 ggplot(data_train2) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
   geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
@@ -489,7 +484,7 @@ ggplot(data_train2) +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-# Plot der Ergebnisse der Validierungsdaten
+# Plot validation data results
 ggplot(data_val2) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
   geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
@@ -498,20 +493,22 @@ ggplot(data_val2) +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-# Plot der Ergebnisse der Testdaten
+# Plot test data results
 ggplot(data_test2) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
   labs(title = "Prediction for the Test Data 2") +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-#------------------------- Warengruppe 3 -------------------------#
+#------------------------- product group 3 -------------------------#
 
 data_train3 <- data.frame(prediction = training_predictions[, 3], actual = training_labels[, 3])
 data_val3 <- data.frame(prediction = validation_predictions[, 3], actual = validation_labels[, 3])
-data_test3 <- data.frame(prediction = testing_predictions[, 3])
+data_test3 <- data.frame(prediction = testing_predictions[, 3], actual = testing_labels[, 3])
 
-# Plot der Ergebnisse der Trainingsdaten
+# Plot training data results
 ggplot(data_train3) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
   geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
@@ -520,7 +517,7 @@ ggplot(data_train3) +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-# Plot der Ergebnisse der Validierungsdaten
+# Plot validation data results
 ggplot(data_val3) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
   geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
@@ -529,21 +526,23 @@ ggplot(data_val3) +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-# Plot der Ergebnisse der Testdaten
+# Plot test data results
 ggplot(data_test3) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
   labs(title = "Prediction for the Test Data 3") +
   xlab("Case Number") +
   ylab("Price in EUR")
 
 
-#------------------------- Warengruppe 4 -------------------------#
+#------------------------- product group 4 -------------------------#
 
 data_train4 <- data.frame(prediction = training_predictions[, 4], actual = training_labels[, 4])
 data_val4 <- data.frame(prediction = validation_predictions[, 4], actual = validation_labels[, 4])
-data_test4 <- data.frame(prediction = testing_predictions[, 4])
+data_test4 <- data.frame(prediction = testing_predictions[, 4],actual = testing_labels[, 4])
 
-# Plot der Ergebnisse der Trainingsdaten
+# Plot training data results
 ggplot(data_train4) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
   geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
@@ -552,7 +551,7 @@ ggplot(data_train4) +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-# Plot der Ergebnisse der Validierungsdaten
+# Plot validation data results
 ggplot(data_val4) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
   geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
@@ -561,20 +560,22 @@ ggplot(data_val4) +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-# Plot der Ergebnisse der Testdaten
+# Plot test data results
 ggplot(data_test4) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
   labs(title = "Prediction for the Test Data 4") +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-#------------------------- Warengruppe 5 -------------------------#
+#------------------------- product group 5 -------------------------#
 
 data_train5 <- data.frame(prediction = training_predictions[, 5], actual = training_labels[, 5])
 data_val5 <- data.frame(prediction = validation_predictions[, 5], actual = validation_labels[, 5])
-data_test5 <- data.frame(prediction = testing_predictions[, 5])
+data_test5 <- data.frame(prediction = testing_predictions[, 5], actual = testing_labels[, 5])
 
-# Plot der Ergebnisse der Trainingsdaten
+# Plot training data results
 ggplot(data_train5) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
   geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
@@ -583,7 +584,7 @@ ggplot(data_train5) +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-# Plot der Ergebnisse der Validierungsdaten
+# Plot validation data results
 ggplot(data_val5) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
   geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
@@ -592,9 +593,11 @@ ggplot(data_val5) +
   xlab("Case Number") +
   ylab("Price in EUR")
 
-# Plot der Ergebnisse der Testdaten
+# Plot test data results
 ggplot(data_test5) +
   geom_line(aes(x = 1:length(prediction), y = prediction, colour = "Predicted Values")) +
+  geom_line(aes(x = 1:length(actual), y = actual, colour = "Actual Values")) +
+  scale_colour_manual(values = c("Predicted Values" = "blue", "Actual Values" = "red")) +
   labs(title = "Prediction for the Test Data 5") +
   xlab("Case Number") +
   ylab("Price in EUR")

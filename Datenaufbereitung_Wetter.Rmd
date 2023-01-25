@@ -2,6 +2,13 @@
 title: "R Notebook"
 output: html_notebook
 ---
+## Wetter Daten
+
+Wetterdaten: \* Mittlerer Bewölkungsgrad am Tag (0 = min, 8 =
+max) \* MIttlere Temperatur in C \* Mittlere
+Windgeschwindigkeit in m/s \* Wettercode
+(<http://www.seewetter-kiel.de/seewetter/daten_symbole.htm>)
+\* und in der Datei wettercodes.Rda
 
 ### Lade notwendige Pakete
 

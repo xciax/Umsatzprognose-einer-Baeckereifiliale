@@ -45,10 +45,7 @@ h4 {
 
 ```{r include = FALSE}
 remove(list = ls())
-# Create list with needed libraries
-# Quellen:
-#   1. synthpop: https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
-#   2.
+
 pkgs <- c(
   "lubridate", "stringr", "tidyverse", "readr",
   "fastDummies", "reticulate", "ggplot2", "Metrics", "VIM", "synthpop", "httr", "rmarkdown"
