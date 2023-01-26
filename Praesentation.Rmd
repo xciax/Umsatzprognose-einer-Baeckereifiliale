@@ -85,7 +85,7 @@ for (pkg in pkgs) {
 <br>
 
 <div class="QR"> 
-  ![Scan me!](/Users/armandocriscuolo/Desktop/Bildschirm­foto 2023-01-16 um 17.36.38.png)
+  ![Scan me!](Bildschirm­foto 2023-01-16 um 17.36.38.png)
   <br> 
   Link: https://datasetsearch.research.google.com
 </div>
@@ -529,7 +529,7 @@ ggplot(data_val3) +
 
 #### Dokumentation des Package "synthpop"
 <div class="QR">
-![Scan me!](/Users/armandocriscuolo/Desktop/Bildschirm­foto 2023-01-16 um 19.40.33.png)
+![Scan me!](Bildschirm­foto 2023-01-16 um 19.40.33.png)
 <br>
 Link: https://cran.r-project.org/web/packages/synthpop/synthpop.pdf
 </div>
